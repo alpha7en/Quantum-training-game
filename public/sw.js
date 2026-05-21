@@ -1,8 +1,9 @@
 const CACHE_NAME = 'quantum-sim-v1';
 const BASE_PATH = new URL(self.registration.scope).pathname;
-const withBase = (path) => `${BASE_PATH}${path.replace(/^\/+/, '')}`.replace(/\/{2,}/g, '/');
+const NORMALIZED_BASE_PATH = BASE_PATH.endsWith('/') ? BASE_PATH : `${BASE_PATH}/`;
+const withBase = (path) => `${NORMALIZED_BASE_PATH}${path.replace(/^\/+/, '')}`.replace(/\/{2,}/g, '/');
 const ASSETS_TO_CACHE = [
-  BASE_PATH,
+  NORMALIZED_BASE_PATH,
   withBase('index.html'),
   withBase('manifest.json'),
   withBase('icon.svg'),
