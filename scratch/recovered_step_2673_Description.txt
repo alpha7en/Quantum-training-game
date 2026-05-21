@@ -1,0 +1,1 @@
+"Restore missing and corrupted quantum tasks (grover-diffuser-2, phase-flip-code, qpe-2, entanglement-swapping, qft-3) in TaskManager.tsx"

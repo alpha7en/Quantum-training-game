@@ -1,0 +1,1 @@
+"python3 -c \"\nwith open('/Users/alpha7en/.gemini/antigravity-cli/brain/88110c6a-259b-4bd3-8107-5a993318958e/.system_generated/logs/transcript.jsonl', 'r', encoding='utf-8', errors='ignore') as f:\n    for idx, line in enumerate(f):\n        if 'entanglement-swapping' in line:\n            print(f'Line {idx} matches!')\n\""

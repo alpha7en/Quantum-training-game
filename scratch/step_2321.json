@@ -1,0 +1,22 @@
+{
+  "step_index": 2321,
+  "source": "MODEL",
+  "type": "PLANNER_RESPONSE",
+  "status": "DONE",
+  "created_at": "2026-05-21T18:30:07Z",
+  "tool_calls": [
+    {
+      "name": "replace_file_content",
+      "args": {
+        "AllowMultiple": "false",
+        "Description": "\"Update challengeTasks with 19 comprehensive tasks, incorporating allowedParams restrictions and Russian educational markdown text.\"",
+        "EndLine": "313",
+        "Instruction": "\"Replace challengeTasks array with the expanded list of 19 quantum challenges.\"",
+        "ReplacementContent": "\"export const challengeTasks: ChallengeTask[] = [\\n  {\\n    id: 'bell-singlet',\\n    name: 'Синглетное состояние Белля |Ψ⁻⟩',\\n    description: 'Создайте синглетное состояние максимального запутывания |Ψ⁻⟩ = 1/√2 (|01⟩ - |10⟩) на двух кубитах, начав с состояния |00⟩.',\\n    numQubits: 2,\\n    initialPreset: ['0', '0'],\\n    targetType: 'state',\\n    targetState: [\\n      cZero(),\\n      { re: 1/Math.sqrt(2), im: 0 },\\n      { re: -1/Math.sqrt(2), im: 0 },\\n      cZero()\\n    ],\\n    allowedGates: ['H', 'X', 'Z', 'C'],\\n    lockInitialStates: true,\\n    lockQubits: true,\\n    difficulty: 'easy',\\n    explanationMarkdown: `### Синглетное состояние Белля $|\\\\\\\\Psi^-\\\\\\\\rangle$\\n\\nСинглетное состояние является одним из четырех максимально запутанных двухкубитовых состояний (состояний Белля). Оно имеет вид:\\n$$|\\\\\\\\Psi^-\\\\\\\\rangle = \\\\\\\\frac{|01\\\\\\\\rangle - |10\\\\\\\\rangle}{\\\\\\\\sqrt{2}}$$\\n\\n#### Свойства и применение:\\n* **Антисимметрия**: При перестановке кубитов местами состояние меняет знак ($|\\\\\\\\Psi^-\\\\\\\\rangle \\\\\\\\to -|\\\\\\\\Psi^-\\\\\\\\rangle$).\\n* **Ротационная инвариантность**: Это состояние сохраняет свой вид при любом одинаковом повороте обоих кубитов на сфере Блоха.\\n* **Применение**: Используется в протоколе квантовой криптографии Экерта (E91) и при создании свободных от декогерентности подпространств (DFS), поскольку сингулярная симметрия компенсирует одинаковые фазовые шумы на обоих кубитах.\\n\\n##\n<truncated 41138 bytes>",
+        "StartLine": "32",
+        "TargetContent": "\"export const challengeTasks: ChallengeTask[] = [\\n  {\\n    id: 'bell-singlet',\\n    name: 'Синглетное состояние Белля |Ψ⁻⟩',\\n    description: 'Создайте синглетное состояние максимального запутывания |Ψ⁻⟩ = 1/√2 (|01⟩ - |10⟩) на двух кубитах, начав с состояния |00⟩.',\\n    numQubits: 2,\\n    initialPreset: ['0', '0'],\\n    targetType: 'state',\\n    targetState: [\\n      cZero(),\\n      { re: 1/Math.sqrt(2), im: 0 },\\n      { re: -1/Math.sqrt(2), im: 0 },\\n      cZero()\\n    ],\\n    allowedGates: ['H', 'X', 'Z', 'C'],\\n    lockInitialStates: true,\\n    lockQubits: true,\\n    difficulty: 'easy',\\n    explanationMarkdown: `### Синглетное состояние Белля $|\\\\\\\\Psi^-\\\\\\\\rangle$\\n\\nСинглетное состояние является одним из четырех максимально запутанных двухкубитовых состояний (состояний Белля). Оно имеет вид:\\n$$|\\\\\\\\Psi^-\\\\\\\\rangle = \\\\\\\\frac{|01\\\\\\\\rangle - |10\\\\\\\\rangle}{\\\\\\\\sqrt{2}}$$\\n\\n#### Свойства и применение:\\n* **Антисимметрия**: При перестановке кубитов местами состояние меняет знак ($|\\\\\\\\Psi^-\\\\\\\\rangle \\\\\\\\to -|\\\\\\\\Psi^-\\\\\\\\rangle$).\\n* **Ротационная инвариантность**: Это состояние сохраняет свой вид при любом одинаковом повороте обоих кубитов на сфере Блоха.\\n* **Применение**: Используется в протоколе квантовой криптографии Экерта (E91) и при создании свободных от декогерентности подпространств (DFS), поскольку сингулярная симметрия компенсирует одинаковые фазовые шумы на обоих кубитах.\\n\\n##\n<truncated 19095 bytes>",
+        "TargetFile": "\"/Users/alpha7en/Documents/development/quantum_app/src/TaskManager.tsx\""
+      }
+    }
+  ]
+}

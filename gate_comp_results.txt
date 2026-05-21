@@ -1,0 +1,319 @@
+
+Page 1:
+  top-left: HASH 4c64bf87 (seen as Page 1 top-left)
+  bottom-left: HASH d6b2ccac (seen as Page 1 bottom-left)
+  top-right: HASH 969af3f4 (seen as Page 1 top-right)
+  bottom-right: EMPTY
+
+Page 2:
+  top-left: HASH 77eeeb6b (seen as Page 2 top-left)
+  bottom-left: HASH d6b2ccac (seen as Page 1 bottom-left)
+  top-right: HASH 3f04ddce (seen as Page 2 top-right)
+  bottom-right: EMPTY
+
+Page 3:
+  top-left: HASH 2e4bf167 (seen as Page 3 top-left)
+  bottom-left: HASH d6b2ccac (seen as Page 1 bottom-left)
+  top-right: HASH 27d911ae (seen as Page 3 top-right)
+  bottom-right: EMPTY
+
+Page 4:
+  top-left: HASH 41acfcab (seen as Page 4 top-left)
+  bottom-left: HASH 17778656 (seen as Page 4 bottom-left)
+  top-right: HASH fb4b0afe (seen as Page 4 top-right)
+  bottom-right: EMPTY
+
+Page 5:
+  top-left: HASH 41acfcab (seen as Page 4 top-left)
+  bottom-left: HASH 17778656 (seen as Page 4 bottom-left)
+  top-right: HASH fb4b0afe (seen as Page 4 top-right)
+  bottom-right: EMPTY
+
+Page 6:
+  top-left: HASH 41acfcab (seen as Page 4 top-left)
+  bottom-left: HASH 17778656 (seen as Page 4 bottom-left)
+  top-right: HASH fb4b0afe (seen as Page 4 top-right)
+  bottom-right: EMPTY
+
+Page 7:
+  top-left: HASH 41acfcab (seen as Page 4 top-left)
+  bottom-left: HASH 17778656 (seen as Page 4 bottom-left)
+  top-right: HASH fb4b0afe (seen as Page 4 top-right)
+  bottom-right: EMPTY
+
+Page 8:
+  top-left: HASH 41acfcab (seen as Page 4 top-left)
+  bottom-left: HASH 17778656 (seen as Page 4 bottom-left)
+  top-right: HASH fb4b0afe (seen as Page 4 top-right)
+  bottom-right: EMPTY
+
+Page 9:
+  top-left: HASH 41acfcab (seen as Page 4 top-left)
+  bottom-left: HASH 17778656 (seen as Page 4 bottom-left)
+  top-right: HASH fb4b0afe (seen as Page 4 top-right)
+  bottom-right: EMPTY
+
+Page 10:
+  top-left: HASH 41acfcab (seen as Page 4 top-left)
+  bottom-left: HASH 17778656 (seen as Page 4 bottom-left)
+  top-right: HASH fb4b0afe (seen as Page 4 top-right)
+  bottom-right: EMPTY
+
+Page 11:
+  top-left: HASH 25c2fc79 (seen as Page 11 top-left)
+  bottom-left: HASH b1cdb6c9 (seen as Page 11 bottom-left)
+  top-right: HASH 66eebd1b (seen as Page 11 top-right)
+  bottom-right: EMPTY
+
+Page 12:
+  top-left: HASH 25c2fc79 (seen as Page 11 top-left)
+  bottom-left: HASH b1cdb6c9 (seen as Page 11 bottom-left)
+  top-right: HASH 66eebd1b (seen as Page 11 top-right)
+  bottom-right: EMPTY
+
+Page 13:
+  top-left: HASH 41acfcab (seen as Page 4 top-left)
+  bottom-left: HASH 17778656 (seen as Page 4 bottom-left)
+  top-right: HASH fb4b0afe (seen as Page 4 top-right)
+  bottom-right: EMPTY
+
+Page 14:
+  top-left: HASH 41acfcab (seen as Page 4 top-left)
+  bottom-left: HASH 17778656 (seen as Page 4 bottom-left)
+  top-right: HASH fb4b0afe (seen as Page 4 top-right)
+  bottom-right: EMPTY
+
+Page 15:
+  top-left: HASH 41acfcab (seen as Page 4 top-left)
+  bottom-left: HASH 17778656 (seen as Page 4 bottom-left)
+  top-right: HASH fb4b0afe (seen as Page 4 top-right)
+  bottom-right: EMPTY
+
+Page 16:
+  top-left: HASH 41acfcab (seen as Page 4 top-left)
+  bottom-left: HASH 17778656 (seen as Page 4 bottom-left)
+  top-right: HASH fb4b0afe (seen as Page 4 top-right)
+  bottom-right: EMPTY
+
+Page 17:
+  top-left: HASH 41acfcab (seen as Page 4 top-left)
+  bottom-left: HASH 17778656 (seen as Page 4 bottom-left)
+  top-right: HASH fb4b0afe (seen as Page 4 top-right)
+  bottom-right: EMPTY
+
+Page 18:
+  top-left: HASH 41acfcab (seen as Page 4 top-left)
+  bottom-left: HASH 17778656 (seen as Page 4 bottom-left)
+  top-right: HASH fb4b0afe (seen as Page 4 top-right)
+  bottom-right: EMPTY
+
+Page 19:
+  top-left: HASH 25c2fc79 (seen as Page 11 top-left)
+  bottom-left: HASH b1cdb6c9 (seen as Page 11 bottom-left)
+  top-right: HASH 66eebd1b (seen as Page 11 top-right)
+  bottom-right: EMPTY
+
+Page 20:
+  top-left: HASH 41acfcab (seen as Page 4 top-left)
+  bottom-left: HASH b1cdb6c9 (seen as Page 11 bottom-left)
+  top-right: HASH a84131f0 (seen as Page 20 top-right)
+  bottom-right: EMPTY
+
+
+=== UNIQUE GATES FOUND ===
+--- ASCII ART FOR Page 1 top-left (Hash: 4c64bf87) ---
+   @@@@@@                         @@@@@@
+   @@@@@@                         @@@@@@
+   @@@@@@                         @@@@@@
+   @@@@@@                         @@@@@@
+   @@@@@@                         @@@@@@
+   @@@@@@                         @@@@@@
+   @@@@@@@                        @@@@@@
+   @@@@@@                         @@@@@@
+   @@@@@@                         @@@@@@
+   @@@@@@                         @@@@@@
+   @@@@@@                         @@@@@@
+   @@@@@@                         @@@@@@
+==================================================
+--- ASCII ART FOR Page 1 bottom-left (Hash: d6b2ccac) ---
+                                        
+                                        
+                                        
+                                        
+                                        
+                                        
+                                        
+                                        
+                                        
+                                        
+                                        
+                                        
+==================================================
+--- ASCII ART FOR Page 1 top-right (Hash: 969af3f4) ---
+        @@               @@           @ 
+       @@@               @@           @ 
+       @@@               @@           @ 
+       @@@               @@           @ 
+       @@@               @@           @ 
+       @@@              @@@           @ 
+       @@@              @@@           @ 
+       @@@               @@           @ 
+       @@@               @@           @ 
+       @@@               @@           @ 
+       @@@               @@           @ 
+       @@@               @@           @ 
+==================================================
+--- ASCII ART FOR Page 2 top-left (Hash: 77eeeb6b) ---
+   @@@@@@                         @@@@@@
+   @@@@@@                         @@@@@@
+   @@@@@@                         @@@@@@
+   @@@@@@                         @@@@@@
+   @@@@@@                         @@@@@@
+   @@@@@@                         @@@@@@
+   @@@@@@                         @@@@@@
+   @@@@@@                         @@@@@@
+   @@@@@@                         @@@@@@
+   @@@@@@                         @@@@@@
+   @@@@@@                         @@@@@@
+   @@@@@@                         @@@@@@
+==================================================
+--- ASCII ART FOR Page 2 top-right (Hash: 3f04ddce) ---
+        @@               @@           @ 
+       @@@               @@           @ 
+       @@@               @@           @ 
+       @@@               @@           @ 
+       @@@               @@           @ 
+       @@@              @@@           @ 
+       @@@              @@@           @ 
+       @@@               @@           @ 
+       @@@               @@           @ 
+       @@@               @@           @ 
+       @@@               @@           @ 
+       @@@               @@           @ 
+==================================================
+--- ASCII ART FOR Page 3 top-left (Hash: 2e4bf167) ---
+   @@@@@@                         @@@@@@
+   @@@@@@                         @@@@@@
+   @@@@@@                         @@@@@@
+   @@@@@@                         @@@@@@
+   @@@@@@                         @@@@@@
+   @@@@@@                         @@@@@@
+   @@@@@@@                       @@@@@@@
+   @@@@@@                         @@@@@@
+   @@@@@@                         @@@@@@
+   @@@@@@                         @@@@@@
+   @@@@@@                         @@@@@@
+   @@@@@@                         @@@@@@
+==================================================
+--- ASCII ART FOR Page 3 top-right (Hash: 27d911ae) ---
+        @@               @@           @ 
+       @@@               @@           @ 
+       @@@               @@           @ 
+       @@@               @@           @ 
+       @@@               @@           @ 
+       @@@              @@@           @ 
+       @@@              @@@           @ 
+       @@@               @@           @ 
+       @@@               @@           @ 
+       @@@               @@           @ 
+       @@@               @@           @ 
+       @@@               @@           @ 
+==================================================
+--- ASCII ART FOR Page 4 top-left (Hash: 41acfcab) ---
+   @@@@@@                         @@@@@@
+   @@@@@@                         @@@@@@
+   @@@@@@                         @@@@@@
+   @@@@@@                         @@@@@@
+   @@@@@@                         @@@@@@
+   @@@@@@                         @@@@@@
+   @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+   @@@@@@                         @@@@@@
+   @@@@@@                         @@@@@@
+   @@@@@@                         @@@@@@
+   @@@@@@                         @@@@@@
+   @@@@@@                         @@@@@@
+==================================================
+--- ASCII ART FOR Page 4 bottom-left (Hash: 17778656) ---
+                                        
+                                        
+                                        
+                                        
+                                        
+                                        
+                                        
+                                        
+                                        
+                                        
+                                        
+                                        
+==================================================
+--- ASCII ART FOR Page 4 top-right (Hash: fb4b0afe) ---
+        @@               @@           @ 
+       @@@               @@           @ 
+       @@@               @@           @ 
+       @@@               @@           @ 
+       @@@               @@           @ 
+       @@@               @@           @ 
+       @@@@@@@@@@@@@@@@@@@@           @ 
+       @@@               @@           @ 
+       @@@               @@           @ 
+       @@@               @@           @ 
+       @@@               @@           @ 
+       @@@               @@           @ 
+==================================================
+--- ASCII ART FOR Page 11 top-left (Hash: 25c2fc79) ---
+   @@@@@@                         @@@@@@
+   @@@@@@                         @@@@@@
+   @@@@@@                         @@@@@@
+   @@@@@@                         @@@@@@
+   @@@@@@                         @@@@@@
+   @@@@@@                         @@@@@@
+   @@@@@@@@ @@@@@@@@@@@@@@@@@@@  @@@@@@@
+   @@@@@@                         @@@@@@
+   @@@@@@                         @@@@@@
+   @@@@@@                         @@@@@@
+   @@@@@@                         @@@@@@
+   @@@@@@                         @@@@@@
+==================================================
+--- ASCII ART FOR Page 11 bottom-left (Hash: b1cdb6c9) ---
+                                        
+                                        
+                                        
+                                        
+                                        
+                                        
+                                        
+                                        
+                                        
+                                        
+                                        
+                                        
+==================================================
+--- ASCII ART FOR Page 11 top-right (Hash: 66eebd1b) ---
+        @@               @@           @ 
+       @@@               @@           @ 
+       @@@               @@           @ 
+       @@@               @@           @ 
+       @@@               @@           @ 
+       @@@               @@           @ 
+       @@@@@@@@@@@@@@@@ @@@           @ 
+       @@@               @@           @ 
+       @@@               @@           @ 
+       @@@               @@           @ 
+       @@@               @@           @ 
+       @@@               @@           @ 
+==================================================
+--- ASCII ART FOR Page 20 top-right (Hash: a84131f0) ---
+        @@               @@           @ 
+       @@@               @@           @ 
+       @@@               @@           @ 
+       @@@               @@           @ 
+       @@@               @@           @ 
+       @@@               @@           @ 
+       @@@@@@@@@@@@@@@@@@@@           @ 
+       @@@               @@           @ 
+       @@@               @@           @ 
+       @@@               @@           @ 
+       @@@               @@           @ 
+       @@@               @@           @ 
+==================================================
