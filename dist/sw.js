@@ -1,11 +1,9 @@
 const CACHE_NAME = 'quantum-sim-v1';
-const BASE_PATH = new URL(self.registration.scope).pathname;
-const withBase = (path) => `${BASE_PATH}${path}`.replace(/\/{2,}/g, '/');
 const ASSETS_TO_CACHE = [
-  BASE_PATH,
-  withBase('index.html'),
-  withBase('manifest.json'),
-  withBase('icon.svg'),
+  '/',
+  '/index.html',
+  '/manifest.json',
+  '/icon.svg',
   'https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css',
   'https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js',
   'https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js'
@@ -89,7 +87,7 @@ self.addEventListener('fetch', (event) => {
         .catch(() => {
           // If offline and requesting page navigation, return the cached root
           if (event.request.mode === 'navigate') {
-            return caches.match(withBase('index.html'));
+            return caches.match('/');
           }
         });
     })
