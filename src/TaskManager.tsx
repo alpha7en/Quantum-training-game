@@ -2,12 +2,13 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { Ticket, ticketsData } from './ticketsData';
 import {
   Complex, StateVector, DensityMatrix,
-  cZero, cOne, cMul, cScale, cConj,
+  cZero, cOne, cMul, cConj,
   getDensityMatrixFromState, applyUnitaryToState, applyUnitaryToDensityMatrix,
   gateH, gateX, gateY, gateZ, gateRx, gateRy, gateRz, gateP,
   createUnitaryForGate,
   computeFidelity,
-  tensorProductVectors, tensorProductMatrices, matrixMul
+  tensorProductVectors, tensorProductMatrices, matrixMul,
+  applyH1, applyCNOT
 } from './quantumMath';
 import { GateInstance, QubitInitialState } from './CircuitBuilder';
 
@@ -1292,20 +1293,11 @@ export const TaskManager: React.FC<TaskManagerProps> = ({
 
     // 2. Compute correct simulation values
     const u: [Complex, Complex] = [currentTicket.uVec[0], currentTicket.uVec[1]];
-    // Ideal:
-    const s1: StateVector = [
-      cScale(u[0], 1/Math.sqrt(2)),
-      cScale(u[1], 1/Math.sqrt(2)),
-      cScale(u[0], 1/Math.sqrt(2)),
-      cScale(u[1], 1/Math.sqrt(2))
-    ];
-    // CNOT control=0, target=1:
-    const sIdeal: StateVector = [
-      s1[0], // |00>
-      s1[1], // |01>
-      s1[3], // |11> (flipped target Q2)
-      s1[2]  // |10> (flipped target Q2)
-    ];
+    // Ideal sequence: H on Q1, CNOT, H on Q1
+    const s0: StateVector = [u[0], u[1], cZero(), cZero()];
+    const s1: StateVector = applyH1(s0);
+    const s2: StateVector = applyCNOT(s1);
+    const sIdeal: StateVector = applyH1(s2);
 
     // Compute student's final state
     const studentDM = simResults.stepsDensityMatrices[simResults.stepsDensityMatrices.length - 1];
@@ -1317,7 +1309,7 @@ export const TaskManager: React.FC<TaskManagerProps> = ({
       details.push(`✓ Квантовая схема собрана верно! Fidelity = ${fidelity.toFixed(4)}`);
       correctParts += 2;
     } else {
-      details.push(`✗ Квантовая схема не соответствует требуемой схеме билета (H ⊗ I затем CNOT). Fidelity = ${fidelity.toFixed(4)}`);
+      details.push(`✗ Квантовая схема не соответствует требуемой схеме билета (H ⊗ I, затем CNOT, затем H ⊗ I). Fidelity = ${fidelity.toFixed(4)}`);
     }
 
     // 3. Verify student calculations: P(0) and P(1)

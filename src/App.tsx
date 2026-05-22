@@ -388,39 +388,44 @@ const CircuitDiagram: React.FC<{ step: number; isSimulating?: boolean }> = ({ st
       <text x="445" y="85" fill="var(--text-muted)" fontSize="10" textAnchor="start" alignmentBaseline="middle">Q₂</text>
 
       {/* Step 0: Initial state label */}
-      <text x="60" y="15" fill="var(--text-muted)" fontSize="10" textAnchor="middle">t=0</text>
-
-      {/* Hadamard gate on Q1 */}
-      <rect x="100" y="20" width="40" height="30" rx="6" {...gateStyle(step >= 1, '#00f2fe')} stroke="var(--accent-cyan)" strokeWidth="1.5" />
-      <text x="120" y="38" fill={step >= 1 ? '#00101a' : 'var(--text-muted)'} fontSize="13" fontWeight="700" textAnchor="middle" alignmentBaseline="middle">H</text>
-      <text x="120" y="15" fill="var(--text-muted)" fontSize="10" textAnchor="middle">t=1</text>
-
+      <text x="50" y="15" fill="var(--text-muted)" fontSize="10" textAnchor="middle">t=0</text>
+ 
+      {/* First Hadamard gate on Q1 */}
+      <rect x="90" y="20" width="40" height="30" rx="6" {...gateStyle(step >= 1, '#00f2fe')} stroke="var(--accent-cyan)" strokeWidth="1.5" />
+      <text x="110" y="38" fill={step >= 1 ? '#00101a' : 'var(--text-muted)'} fontSize="13" fontWeight="700" textAnchor="middle" alignmentBaseline="middle">H</text>
+      <text x="110" y="15" fill="var(--text-muted)" fontSize="10" textAnchor="middle">t=1</text>
+ 
       {/* CNOT gate */}
       {/* Control dot on Q1 */}
-      <circle cx="240" cy="35" r="6" {...gateStyle(step >= 2, '#a855f7')} stroke="var(--accent-purple)" strokeWidth="1.5" />
+      <circle cx="200" cy="35" r="6" {...gateStyle(step >= 2, '#a855f7')} stroke="var(--accent-purple)" strokeWidth="1.5" />
       {/* Vertical line of CNOT */}
-      <line x1="240" y1="41" x2="240" y2="79"
+      <line x1="200" y1="41" x2="200" y2="79"
         stroke={step >= 2 ? 'var(--accent-purple)' : 'var(--border-muted)'}
         strokeWidth="1.5"
         style={{ filter: step >= 2 ? 'drop-shadow(0 0 6px var(--accent-purple))' : 'none', transition: 'all 0.4s ease' }}
       />
       {/* Target circle on Q2 */}
-      <circle cx="240" cy="85" r="14" fill="none" stroke={step >= 2 ? 'var(--accent-purple)' : 'var(--border-muted)'} strokeWidth="1.5"
+      <circle cx="200" cy="85" r="14" fill="none" stroke={step >= 2 ? 'var(--accent-purple)' : 'var(--border-muted)'} strokeWidth="1.5"
         style={{ filter: step >= 2 ? 'drop-shadow(0 0 8px var(--accent-purple))' : 'none', transition: 'all 0.4s ease' }}
       />
-      <line x1="226" y1="85" x2="254" y2="85" stroke={step >= 2 ? 'var(--accent-purple)' : 'var(--border-muted)'} strokeWidth="1.5" />
-      <line x1="240" y1="71" x2="240" y2="99" stroke={step >= 2 ? 'var(--accent-purple)' : 'var(--border-muted)'} strokeWidth="1.5" />
-      <text x="240" y="15" fill="var(--text-muted)" fontSize="10" textAnchor="middle">t=2</text>
-
+      <line x1="186" y1="85" x2="214" y2="85" stroke={step >= 2 ? 'var(--accent-purple)' : 'var(--border-muted)'} strokeWidth="1.5" />
+      <line x1="200" y1="71" x2="200" y2="99" stroke={step >= 2 ? 'var(--accent-purple)' : 'var(--border-muted)'} strokeWidth="1.5" />
+      <text x="200" y="15" fill="var(--text-muted)" fontSize="10" textAnchor="middle">t=2</text>
+ 
+      {/* Second Hadamard gate on Q1 */}
+      <rect x="270" y="20" width="40" height="30" rx="6" {...gateStyle(step >= 3, '#00f2fe')} stroke="var(--accent-cyan)" strokeWidth="1.5" />
+      <text x="290" y="38" fill={step >= 3 ? '#00101a' : 'var(--text-muted)'} fontSize="13" fontWeight="700" textAnchor="middle" alignmentBaseline="middle">H</text>
+      <text x="290" y="15" fill="var(--text-muted)" fontSize="10" textAnchor="middle">t=3</text>
+ 
       {/* Measurement symbol on Q1 */}
       <rect x="360" y="20" width="40" height="30" rx="6"
-        fill={step >= 3 ? 'rgba(255, 200, 50, 0.1)' : 'rgba(255,255,255,0.03)'}
-        stroke={step >= 3 ? '#ffc832' : 'var(--border-muted)'}
+        fill={step >= 4 ? 'rgba(255, 200, 50, 0.1)' : 'rgba(255,255,255,0.03)'}
+        stroke={step >= 4 ? '#ffc832' : 'var(--border-muted)'}
         strokeWidth="1.5"
-        style={{ filter: step >= 3 ? 'drop-shadow(0 0 8px #ffc832)' : 'none', transition: 'all 0.4s ease' }}
+        style={{ filter: step >= 4 ? 'drop-shadow(0 0 8px #ffc832)' : 'none', transition: 'all 0.4s ease' }}
       />
-      <text x="380" y="38" fill={step >= 3 ? '#ffc832' : 'var(--text-muted)'} fontSize="16" textAnchor="middle" alignmentBaseline="middle">M</text>
-      <text x="380" y="15" fill="var(--text-muted)" fontSize="10" textAnchor="middle">Измерение</text>
+      <text x="380" y="38" fill={step >= 4 ? '#ffc832' : 'var(--text-muted)'} fontSize="16" textAnchor="middle" alignmentBaseline="middle">M</text>
+      <text x="380" y="15" fill="var(--text-muted)" fontSize="10" textAnchor="middle">t=4</text>
     </svg>
   );
 };
@@ -913,11 +918,12 @@ const App: React.FC = () => {
     setTimeout(() => setCircuitStep(1), 600);
     setTimeout(() => setCircuitStep(2), 1200);
     setTimeout(() => setCircuitStep(3), 1800);
+    setTimeout(() => setCircuitStep(4), 2400);
     
     setTimeout(() => {
       setIsSimulating(false);
       setActiveTab('results');
-    }, 2400);
+    }, 3000);
   };
 
 
@@ -929,24 +935,26 @@ const App: React.FC = () => {
     const s0: StateVector = getInitialState(u);
     const s1: StateVector = applyH1(s0);
     const s2: StateVector = applyCNOT(s1);
-    const rho: DensityMatrix4x4 = getDensityMatrix(s2);
+    const s3: StateVector = applyH1(s2);
+    const rho: DensityMatrix4x4 = getDensityMatrix(s3);
     const rho1 = getReducedDensityMatrix1(rho);
     const rho2 = getReducedDensityMatrix2(rho);
     const bloch1 = getBlochVector(rho1);
     const bloch2 = getBlochVector(rho2);
 
-    const p0 = (s2[0].re ** 2 + s2[0].im ** 2) + (s2[1].re ** 2 + s2[1].im ** 2);
-    const p1 = (s2[2].re ** 2 + s2[2].im ** 2) + (s2[3].re ** 2 + s2[3].im ** 2);
+    const p0 = (s3[0].re ** 2 + s3[0].im ** 2) + (s3[1].re ** 2 + s3[1].im ** 2);
+    const p1 = (s3[2].re ** 2 + s3[2].im ** 2) + (s3[3].re ** 2 + s3[3].im ** 2);
 
     const unitarity = checkUnitarity(ticket.matrixA);
 
-    return { s0, s1, s2, rho, rho1, rho2, bloch1, bloch2, p0, p1, unitarity };
+    return { s0, s1, s2, s3, rho, rho1, rho2, bloch1, bloch2, p0, p1, unitarity };
   }, [ticket]);
 
   const displayedState = useMemo(() => {
     if (circuitStep === 0) return sim.s0;
     if (circuitStep === 1) return sim.s1;
-    return sim.s2;
+    if (circuitStep === 2) return sim.s2;
+    return sim.s3;
   }, [circuitStep, sim]);
 
   const tabBtn = (tab: typeof activeTab, label: string) => (
@@ -1546,7 +1554,8 @@ const App: React.FC = () => {
                   { step: 0, label: '⏮ Начальное состояние' },
                   { step: 1, label: '① После H ⊗ I' },
                   { step: 2, label: '② После CNOT' },
-                  { step: 3, label: '③ Измерение Q₁' },
+                  { step: 3, label: '③ После H ⊗ I' },
+                  { step: 4, label: '④ Измерение Q₁' },
                 ].map(({ step, label }) => (
                   <button
                     key={step}
@@ -1565,8 +1574,9 @@ const App: React.FC = () => {
                 <h4 style={{ fontSize: '14px', fontWeight: '600', color: 'var(--text-primary)', marginBottom: '16px' }}>
                   Вектор Состояния |ψ⟩
                   {circuitStep === 0 && <span style={{ color: 'var(--text-muted)', fontWeight: 400, fontSize: '12px' }}> — начальное |0⟩|u⟩</span>}
-                  {circuitStep === 1 && <span style={{ color: 'var(--accent-cyan)', fontWeight: 400, fontSize: '12px' }}> — после H⊗I</span>}
-                  {circuitStep >= 2 && <span style={{ color: 'var(--accent-purple)', fontWeight: 400, fontSize: '12px' }}> — после CNOT</span>}
+                  {circuitStep === 1 && <span style={{ color: 'var(--accent-cyan)', fontWeight: 400, fontSize: '12px' }}> — после первого H⊗I</span>}
+                  {circuitStep === 2 && <span style={{ color: 'var(--accent-purple)', fontWeight: 400, fontSize: '12px' }}> — после CNOT</span>}
+                  {circuitStep >= 3 && <span style={{ color: 'var(--accent-cyan)', fontWeight: 400, fontSize: '12px' }}> — после второго H⊗I</span>}
                 </h4>
                 <StateVectorDisplay state={displayedState} />
               </div>
