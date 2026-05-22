@@ -10,6 +10,14 @@ const ASSETS_TO_CACHE = [
   'https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js'
 ];
 
+const cacheResponse = (request, response) => {
+  return caches.open(CACHE_NAME)
+    .then((cache) => cache.put(request, response))
+    .catch((err) => {
+      console.warn('Cache update failed:', err);
+    });
+};
+
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
@@ -44,10 +52,8 @@ self.addEventListener('fetch', (event) => {
           if (networkResponse && networkResponse.status === 200) {
             const responseToCache = networkResponse.clone();
             const responseForIndex = networkResponse.clone();
-            caches.open(CACHE_NAME).then((cache) => {
-              cache.put(event.request, responseToCache);
-              cache.put(INDEX_URL, responseForIndex);
-            });
+            cacheResponse(event.request, responseToCache);
+            cacheResponse(INDEX_URL, responseForIndex);
           }
           return networkResponse;
         })
@@ -77,9 +83,7 @@ self.addEventListener('fetch', (event) => {
         fetch(event.request)
           .then((networkResponse) => {
             if (networkResponse && networkResponse.status === 200) {
-              caches.open(CACHE_NAME).then((cache) => {
-                cache.put(event.request, networkResponse);
-              });
+              cacheResponse(event.request, networkResponse);
             }
           })
           .catch(() => {
@@ -98,9 +102,7 @@ self.addEventListener('fetch', (event) => {
           const isCDN = url.hostname.includes('cdn.jsdelivr.net');
           if (isSameOrigin || isCDN) {
             const responseToCache = networkResponse.clone();
-            caches.open(CACHE_NAME).then((cache) => {
-              cache.put(event.request, responseToCache);
-            });
+            cacheResponse(event.request, responseToCache);
           }
           return networkResponse;
         })
