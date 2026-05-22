@@ -24,8 +24,8 @@ declare global {
 
 // ── Sidebar Multi-Mode Component ──────────────────────────────────────────────
 interface SidebarProps {
-  appMode: 'exam' | 'challenges';
-  onModeChange: (mode: 'exam' | 'challenges') => void;
+  appMode: 'exam' | 'challenges' | 'sandbox';
+  onModeChange: (mode: 'exam' | 'challenges' | 'sandbox') => void;
   selectedTicketId: number;
   onSelectTicket: (id: number) => void;
   selectedChallengeId: string | null;
@@ -84,9 +84,9 @@ const Sidebar: React.FC<SidebarProps> = ({
             onClick={() => onModeChange('exam')}
             style={{
               flex: 1,
-              padding: '8px 10px',
+              padding: '8px 4px',
               borderRadius: '6px',
-              fontSize: '12px',
+              fontSize: '11px',
               fontWeight: '600',
               border: 'none',
               background: appMode === 'exam'
@@ -103,9 +103,9 @@ const Sidebar: React.FC<SidebarProps> = ({
             onClick={() => onModeChange('challenges')}
             style={{
               flex: 1,
-              padding: '8px 10px',
+              padding: '8px 4px',
               borderRadius: '6px',
-              fontSize: '12px',
+              fontSize: '11px',
               fontWeight: '600',
               border: 'none',
               background: appMode === 'challenges'
@@ -117,6 +117,25 @@ const Sidebar: React.FC<SidebarProps> = ({
             }}
           >
             🎮 Задачи
+          </button>
+          <button
+            onClick={() => onModeChange('sandbox')}
+            style={{
+              flex: 1,
+              padding: '8px 4px',
+              borderRadius: '6px',
+              fontSize: '11px',
+              fontWeight: '600',
+              border: 'none',
+              background: appMode === 'sandbox'
+                ? 'linear-gradient(135deg, hsla(186,100%,50%,0.15) 0%, hsla(265,100%,65%,0.1) 100%)'
+                : 'transparent',
+              color: appMode === 'sandbox' ? 'var(--accent-cyan)' : 'var(--text-muted)',
+              cursor: 'pointer',
+              transition: 'var(--transition-fast)',
+            }}
+          >
+            🛠️ Песочница
           </button>
         </div>
       </div>
@@ -166,7 +185,7 @@ const Sidebar: React.FC<SidebarProps> = ({
               </button>
             ))}
           </>
-        ) : (
+        ) : appMode === 'challenges' ? (
           <>
             <p style={{ fontSize: '11px', color: 'var(--text-muted)', padding: '0 8px 10px', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
               Игровые Задачи
@@ -280,6 +299,44 @@ const Sidebar: React.FC<SidebarProps> = ({
               );
             })}
           </>
+        ) : (
+          <div style={{ padding: '8px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <p style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: 0 }}>
+              🛠️ Песочница Схем
+            </p>
+            
+            <div className="glass-panel" style={{
+              padding: '16px',
+              background: 'rgba(255, 255, 255, 0.02)',
+              border: '1px solid var(--border-muted)',
+              borderRadius: '12px',
+              fontSize: '12px',
+              lineHeight: '1.6',
+              color: 'var(--text-secondary)'
+            }}>
+              <p style={{ margin: '0 0 12px 0', color: 'var(--accent-cyan)', fontWeight: '700' }}>
+                Добро пожаловать!
+              </p>
+              В этом режиме вы можете проектировать любые квантовые цепи размерностью от 1 до 6 кубитов.
+            </div>
+
+            <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
+              <div style={{ fontWeight: '600', color: 'var(--text-primary)', marginBottom: '8px' }}>
+                Возможности:
+              </div>
+              <ul style={{ paddingLeft: '16px', margin: 0, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <li>
+                  <strong style={{ color: 'var(--accent-cyan)' }}>Матрица U:</strong> в результатах симуляции отображается полная унитарная матрица, описывающая схему.
+                </li>
+                <li>
+                  <strong style={{ color: 'var(--accent-cyan)' }}>Проверка билетов:</strong> схема из песочницы автоматически используется при проверке билетов на вкладке «Проверка билета» экзаменационного режима.
+                </li>
+                <li>
+                  <strong style={{ color: 'var(--accent-cyan)' }}>Свободный выбор:</strong> нет ограничений на типы гейтов или параметры.
+                </li>
+              </ul>
+            </div>
+          </div>
         )}
       </div>
     </aside>
@@ -542,7 +599,7 @@ const getQubitInitialStateFromPreset = (preset: '0' | '1' | '+' | '-'): QubitIni
 // ── Main App ──────────────────────────────────────────────────────────────────
 const App: React.FC = () => {
   // App Mode State
-  const [appMode, setAppMode] = useState<'exam' | 'challenges'>('exam');
+  const [appMode, setAppMode] = useState<'exam' | 'challenges' | 'sandbox'>('exam');
   
   // Selected IDs
   const [selectedId, setSelectedId] = useState(1);
@@ -570,6 +627,15 @@ const App: React.FC = () => {
   const [challengeGrids, setChallengeGrids] = useState<{ [id: string]: (GateInstance | null)[][] }>({});
   const [challengeInitialStates, setChallengeInitialStates] = useState<{ [id: string]: QubitInitialState[] }>({});
   const [challengeNumQubits, setChallengeNumQubits] = useState<{ [id: string]: number }>({});
+
+  // Caching states for Sandbox mode
+  const [sandboxGrid, setSandboxGrid] = useState<(GateInstance | null)[][]>(() =>
+    Array.from({ length: 3 }, () => Array.from({ length: 8 }, () => null))
+  );
+  const [sandboxNumQubits, setSandboxNumQubits] = useState<number>(3);
+  const [sandboxInitialStates, setSandboxInitialStates] = useState<QubitInitialState[]>(() =>
+    Array.from({ length: 3 }, () => ({ type: 'pure', preset: '0', alpha: cOne(), beta: cZero(), p0: 1, p1: 0 }))
+  );
 
   // Current builder canvas state
   const [grid, setGrid] = useState<(GateInstance | null)[][]>(() =>
@@ -613,7 +679,7 @@ const App: React.FC = () => {
 
   // Handle switching active items (saving to and loading from cache)
   const switchActiveItem = (
-    nextMode: 'exam' | 'challenges',
+    nextMode: 'exam' | 'challenges' | 'sandbox',
     nextTicketId: number | null,
     nextChallengeId: string | null
   ) => {
@@ -625,6 +691,9 @@ const App: React.FC = () => {
       if (nextMode === 'challenges' && (nextChallengeId === null || nextChallengeId === activeChallengeId)) {
         return;
       }
+      if (nextMode === 'sandbox') {
+        return;
+      }
     }
 
     // 1. Save current state to cache
@@ -632,12 +701,16 @@ const App: React.FC = () => {
       setTicketGrids(prev => ({ ...prev, [selectedId]: deepClone(grid) }));
       setTicketInitialStates(prev => ({ ...prev, [selectedId]: deepClone(initialStates) }));
       setTicketNumQubits(prev => ({ ...prev, [selectedId]: numQubits }));
-    } else {
+    } else if (appMode === 'challenges') {
       if (activeChallengeId) {
         setChallengeGrids(prev => ({ ...prev, [activeChallengeId]: deepClone(grid) }));
         setChallengeInitialStates(prev => ({ ...prev, [activeChallengeId]: deepClone(initialStates) }));
         setChallengeNumQubits(prev => ({ ...prev, [activeChallengeId]: numQubits }));
       }
+    } else if (appMode === 'sandbox') {
+      setSandboxGrid(deepClone(grid));
+      setSandboxInitialStates(deepClone(initialStates));
+      setSandboxNumQubits(numQubits);
     }
 
     // 2. Load next state from cache, or initialize
@@ -671,7 +744,7 @@ const App: React.FC = () => {
         setNumQubits(2);
       }
       if (nextTicketId !== null) setSelectedId(nextTicketId);
-    } else {
+    } else if (nextMode === 'challenges') {
       const targetId = nextChallengeId ?? activeChallengeId ?? challengeTasks[0].id;
       const cachedGrid = challengeGrids[targetId];
       const cachedInitialStates = challengeInitialStates[targetId];
@@ -697,6 +770,10 @@ const App: React.FC = () => {
         setNumQubits(ch.numQubits);
       }
       if (nextChallengeId !== null) setActiveChallengeId(nextChallengeId);
+    } else if (nextMode === 'sandbox') {
+      setGrid(deepClone(sandboxGrid));
+      setInitialStates(deepClone(sandboxInitialStates));
+      setNumQubits(sandboxNumQubits);
     }
 
     // Update Mode
@@ -706,6 +783,10 @@ const App: React.FC = () => {
     if (nextMode === 'challenges') {
       if (activeTab !== 'constructor' && activeTab !== 'theory') {
         setActiveTab('constructor');
+      }
+    } else if (nextMode === 'exam') {
+      if (activeTab === 'constructor') {
+        setActiveTab('theory');
       }
     }
     
@@ -1127,6 +1208,34 @@ const App: React.FC = () => {
     );
   };
 
+  const getGradingGrid = (sGrid: (GateInstance | null)[][]): (GateInstance | null)[][] => {
+    const colsCount = sGrid[0]?.length || 8;
+    const result: (GateInstance | null)[][] = [];
+    for (let r = 0; r < 2; r++) {
+      if (r < sGrid.length) {
+        result.push(sGrid[r].map(gate => gate ? { ...gate } : null));
+      } else {
+        result.push(Array.from({ length: colsCount }, () => null));
+      }
+    }
+    return result;
+  };
+
+  const getGradingInitialStates = (t: typeof ticketsData[0]): QubitInitialState[] => {
+    return [
+      { type: 'pure', preset: '0', alpha: cOne(), beta: cZero(), p0: 1, p1: 0 },
+      {
+        type: 'pure',
+        preset: 'custom-pure',
+        alpha: t.uVec[0],
+        beta: t.uVec[1],
+        p0: t.uVec[0].re**2 + t.uVec[0].im**2,
+        p1: t.uVec[1].re**2 + t.uVec[1].im**2,
+        label: '|u⟩',
+      }
+    ];
+  };
+
   return (
     <div className="dashboard-grid">
       {/* Multi-mode Sidebar */}
@@ -1135,8 +1244,10 @@ const App: React.FC = () => {
         onModeChange={(mode) => {
           if (mode === 'exam') {
             switchActiveItem('exam', selectedId, null);
-          } else {
+          } else if (mode === 'challenges') {
             switchActiveItem('challenges', null, activeChallengeId ?? challengeTasks[0].id);
+          } else if (mode === 'sandbox') {
+            switchActiveItem('sandbox', null, null);
           }
         }}
         selectedTicketId={selectedId}
@@ -1194,7 +1305,7 @@ const App: React.FC = () => {
                   {ticket.theoryQuestion}
                 </h2>
               </>
-            ) : (
+            ) : appMode === 'challenges' ? (
               activeChallenge && (
                 <>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
@@ -1233,6 +1344,29 @@ const App: React.FC = () => {
                   </p>
                 </>
               )
+            ) : (
+              <>
+                <div style={{
+                  display: 'inline-block',
+                  padding: '4px 12px',
+                  background: 'hsla(186,100%,50%,0.12)',
+                  border: '1px solid var(--border-glow)',
+                  borderRadius: '20px',
+                  fontSize: '11px',
+                  color: 'var(--accent-cyan)',
+                  fontWeight: '600',
+                  letterSpacing: '0.05em',
+                  marginBottom: '8px',
+                }}>
+                  СВОБОДНЫЙ РЕЖИМ
+                </div>
+                <h2 style={{ fontSize: '20px', fontWeight: '700', color: 'var(--text-primary)', lineHeight: 1.4, maxWidth: '700px', margin: '0 0 6px' }}>
+                  Песочница Квантовых Цепей
+                </h2>
+                <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: 0, maxWidth: '800px', lineHeight: 1.5 }}>
+                  Конструируйте произвольные квантовые схемы размерностью от 1 до 6 кубитов, исследуйте их унитарные матрицы, векторы состояний и Bloch-сферы. Сконструированная здесь схема автоматически используется для проверки экзаменационных билетов.
+                </p>
+              </>
             )}
             </div>
           </div>
@@ -1242,20 +1376,19 @@ const App: React.FC = () => {
                 {tabBtn('theory', '📖 Теория')}
                 {tabBtn('simulator', '⚙️ Схема Билета')}
                 {tabBtn('results', '📊 Результаты Билета')}
-                {tabBtn('constructor', '🛠️ Конструктор Схем')}
                 {tabBtn('grading', '🎓 Проверка билета')}
               </>
-            ) : (
+            ) : appMode === 'challenges' ? (
               <>
                 {tabBtn('constructor', '🛠️ Конструктор')}
                 {tabBtn('theory', '📖 Описание Задачи')}
               </>
-            )}
+            ) : null}
           </div>
         </div>
 
         {/* ── THEORY TAB ────────────────────────────────── */}
-        {activeTab === 'theory' && (
+        {activeTab === 'theory' && appMode !== 'sandbox' && (
           appMode === 'exam' ? (
             <div className="responsive-theory-grid">
               <div className="glass-panel" style={{ padding: '28px' }}>
@@ -1552,7 +1685,7 @@ const App: React.FC = () => {
         )}
 
         {/* ── CONSTRUCTOR TAB ───────────────────────────── */}
-        {activeTab === 'constructor' && (
+        {activeTab === 'constructor' && appMode !== 'sandbox' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
             <div className="glass-panel" style={{ padding: '24px' }}>
               <CircuitBuilder
@@ -1573,12 +1706,29 @@ const App: React.FC = () => {
           </div>
         )}
 
+        {/* ── SANDBOX MODE CONTENT ─────────────────────────── */}
+        {appMode === 'sandbox' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            <div className="glass-panel" style={{ padding: '24px' }}>
+              <CircuitBuilder
+                grid={grid}
+                setGrid={setGrid}
+                numQubits={numQubits}
+                setNumQubits={setNumQubits}
+                initialStates={initialStates}
+                setInitialStates={setInitialStates}
+                appMode={appMode}
+              />
+            </div>
+          </div>
+        )}
+
         {/* ── GRADING & TASKS TAB ───────────────────────── */}
         {activeTab === 'grading' && appMode === 'exam' && (
           <TaskManager
-            grid={grid}
-            numQubits={numQubits}
-            initialStates={initialStates}
+            grid={getGradingGrid(sandboxGrid)}
+            numQubits={2}
+            initialStates={getGradingInitialStates(ticket)}
             currentTicket={ticket}
             onSelectTicket={(id) => {
               switchActiveItem('exam', id, null);

@@ -35,7 +35,7 @@ interface CircuitBuilderProps {
   allowedParams?: string[];
   lockQubits?: boolean;
   lockInitialStates?: boolean;
-  appMode?: 'exam' | 'challenges';
+  appMode?: 'exam' | 'challenges' | 'sandbox';
 }
 
 export const CircuitBuilder: React.FC<CircuitBuilderProps> = ({
@@ -753,6 +753,25 @@ export const CircuitBuilder: React.FC<CircuitBuilderProps> = ({
               Сетка: {numQubits} куб. × {numColumns} тактов
             </span>
           </div>
+
+          {/* If sandbox mode, show the full unitary matrix of the circuit */}
+          {appMode === 'sandbox' && (
+            <div className="glass-panel" style={{ padding: '20px', background: 'rgba(0,0,0,0.15)', border: '1px solid var(--border-muted)', borderRadius: '10px' }}>
+              <h4 style={{ fontSize: '14px', fontWeight: '700', color: 'var(--accent-cyan)', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                🧮 Полная унитарная матрица цепи U
+              </h4>
+              <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '16px', lineHeight: 1.5 }}>
+                Эквивалентная унитарная матрица, описывающая действие всей последовательности гейтов на систему из {numQubits} кубитов.
+              </p>
+              <div style={{ overflowX: 'auto', maxWidth: '100%', WebkitOverflowScrolling: 'touch' }}>
+                <ComplexMatrixDisplay
+                  matrix={simulationResult.finalUnitary}
+                  size={1 << numQubits}
+                  digits={4}
+                />
+              </div>
+            </div>
+          )}
 
           {/* Step selection slider */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', background: 'rgba(0,0,0,0.2)', padding: '16px', borderRadius: '10px', border: '1px solid var(--border-muted)' }}>
