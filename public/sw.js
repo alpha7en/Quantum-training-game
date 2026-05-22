@@ -43,8 +43,10 @@ self.addEventListener('fetch', (event) => {
         .then((networkResponse) => {
           if (networkResponse && networkResponse.status === 200) {
             const responseToCache = networkResponse.clone();
+            const responseForIndex = networkResponse.clone();
             caches.open(CACHE_NAME).then((cache) => {
-              cache.put(INDEX_URL, responseToCache);
+              cache.put(event.request, responseToCache);
+              cache.put(INDEX_URL, responseForIndex);
             });
           }
           return networkResponse;
