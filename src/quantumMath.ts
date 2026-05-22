@@ -36,17 +36,41 @@ export const cNormSq = (a: Complex): number => a.re * a.re + a.im * a.im;
 export const cNorm = (a: Complex): number => Math.sqrt(cNormSq(a));
 
 export const cToString = (a: Complex, digits: number = 3): string => {
-  if (Math.abs(a.re) < 1e-6 && Math.abs(a.im) < 1e-6) return "0";
-  if (Math.abs(a.im) < 1e-6) return a.re.toFixed(digits);
-  if (Math.abs(a.re) < 1e-6) {
+  const formatFloat = (x: number, d: number): string => {
+    const rounded = Math.round(x);
+    if (Math.abs(x - rounded) < 1e-6) {
+      return rounded.toString();
+    }
+    let s = x.toFixed(d);
+    if (/^-0(\.0+)?$/.test(s)) {
+      return "0";
+    }
+    if (s.indexOf('.') !== -1) {
+      s = s.replace(/\.?0+$/, '');
+    }
+    return s;
+  };
+
+  const isReZero = Math.abs(a.re) < 1e-6;
+  const isImZero = Math.abs(a.im) < 1e-6;
+
+  if (isReZero && isImZero) return "0";
+
+  if (isImZero) {
+    return formatFloat(a.re, digits);
+  }
+
+  if (isReZero) {
     if (Math.abs(a.im - 1) < 1e-6) return "i";
     if (Math.abs(a.im + 1) < 1e-6) return "-i";
-    return `${a.im.toFixed(digits)}i`;
+    return `${formatFloat(a.im, digits)}i`;
   }
+
+  const reStr = formatFloat(a.re, digits);
   const sign = a.im > 0 ? "+" : "-";
   const imVal = Math.abs(a.im);
-  const imStr = Math.abs(imVal - 1) < 1e-6 ? "i" : `${imVal.toFixed(digits)}i`;
-  return `${a.re.toFixed(digits)} ${sign} ${imStr}`;
+  const imStr = Math.abs(imVal - 1) < 1e-6 ? "i" : `${formatFloat(imVal, digits)}i`;
+  return `${reStr} ${sign} ${imStr}`;
 };
 
 export type StateVector = Complex[];
