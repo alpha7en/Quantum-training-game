@@ -83,7 +83,7 @@ self.addEventListener('fetch', (event) => {
         fetch(event.request)
           .then((networkResponse) => {
             if (networkResponse && networkResponse.status === 200) {
-              cacheResponse(event.request, networkResponse);
+              cacheResponse(event.request, networkResponse.clone());
             }
           })
           .catch(() => {
@@ -106,7 +106,10 @@ self.addEventListener('fetch', (event) => {
           }
           return networkResponse;
         })
-        .catch(() => undefined);
+        .catch((err) => {
+          console.warn('Network request failed:', err);
+          return caches.match(event.request);
+        });
     })
   );
 });
