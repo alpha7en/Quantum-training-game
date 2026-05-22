@@ -9,8 +9,8 @@ interface MatrixProps {
 }
 
 const entryColor = (entry: string) => {
-  if (entry === 'i' || entry === '-i') return 'var(--accent-purple)';
-  if (entry === '-1') return 'var(--accent-pink)';
+  if (entry.includes('i')) return 'var(--accent-purple)';
+  if (entry.includes('-')) return 'var(--accent-pink)';
   return 'var(--text-primary)';
 };
 
@@ -62,7 +62,7 @@ export const MatrixDisplay: React.FC<MatrixProps> = ({ matrix, scale, title, hig
                   minWidth: '28px',
                   textAlign: 'center',
                   color: entryColor(entry),
-                  fontWeight: entry !== '1' ? '600' : '400',
+                  fontWeight: (entry !== '1' && entry !== '1/2') ? '600' : '400',
                 }}
               >
                 {entry}

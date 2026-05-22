@@ -1,0 +1,21 @@
+# Dependencies
+node_modules
+/node_modules
+/.vite
+/node_modules/
+
+# Production build
+dist
+/dist
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Scratch/debug files
+scratch/
+/*.js
+/*.ts
+!vite.config.ts
+!tsconfig.json
+!src/**/*

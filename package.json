@@ -3,10 +3,13 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
+  "homepage": "https://alpha7en.github.io/Quantum-training-game",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d dist"
   },
   "dependencies": {
     "react": "^18.3.1",
@@ -16,6 +19,7 @@
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react": "^4.3.1",
+    "gh-pages": "^6.1.1",
     "puppeteer": "^25.0.4",
     "typescript": "^5.2.2",
     "vite": "^5.3.1"

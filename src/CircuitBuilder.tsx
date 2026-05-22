@@ -35,6 +35,7 @@ interface CircuitBuilderProps {
   allowedParams?: string[];
   lockQubits?: boolean;
   lockInitialStates?: boolean;
+  appMode?: 'exam' | 'challenges';
 }
 
 export const CircuitBuilder: React.FC<CircuitBuilderProps> = ({
@@ -48,7 +49,12 @@ export const CircuitBuilder: React.FC<CircuitBuilderProps> = ({
   allowedParams,
   lockQubits,
   lockInitialStates,
+  appMode = 'challenges',
 }) => {
+  const isGateFixed = (gate: GateInstance | null | undefined): boolean => {
+    return appMode === 'challenges' && !!gate?.fixed;
+  };
+
   const numColumns = grid[0]?.length || 8;
   const [isSimulating, setIsSimulating] = useState(false);
   const [simulationResult, setSimulationResult] = useState<{
@@ -123,7 +129,7 @@ export const CircuitBuilder: React.FC<CircuitBuilderProps> = ({
   // Drag start from grid cell
   const handleGridDragStart = (e: React.PointerEvent, row: number, col: number, type: string) => {
     const gate = grid[row]?.[col];
-    if (gate?.fixed) return; // Block dragging fixed gates!
+    if (isGateFixed(gate)) return; // Block dragging fixed gates!
     e.preventDefault();
     setDraggedGate({ type, source: { row, col } });
     setDragPos({ x: e.clientX, y: e.clientY });
@@ -159,7 +165,7 @@ export const CircuitBuilder: React.FC<CircuitBuilderProps> = ({
 
           if (row >= 0 && row < numQubits && col >= 0 && col < numColumns) {
             const targetCellGate = grid[row]?.[col];
-            if (targetCellGate?.fixed) {
+            if (isGateFixed(targetCellGate)) {
               setDraggedGate(null);
               return;
             }
@@ -179,7 +185,7 @@ export const CircuitBuilder: React.FC<CircuitBuilderProps> = ({
               const next = prev.map(r => [...r]);
               if (draggedGate.source !== 'palette') {
                 const src = draggedGate.source;
-                if (!next[src.row][src.col]?.fixed) {
+                if (!isGateFixed(next[src.row][src.col])) {
                   next[src.row][src.col] = null;
                 }
               }
@@ -197,7 +203,7 @@ export const CircuitBuilder: React.FC<CircuitBuilderProps> = ({
           if (draggedGate.source !== 'palette') {
             const src = draggedGate.source;
             const gate = grid[src.row]?.[src.col];
-            if (!gate?.fixed) {
+            if (!isGateFixed(gate)) {
               setGrid(prev => {
                 const next = prev.map(r => [...r]);
                 next[src.row][src.col] = null;
@@ -225,7 +231,7 @@ export const CircuitBuilder: React.FC<CircuitBuilderProps> = ({
       setActiveCellMenu(null);
       return;
     }
-    if (gate.fixed) {
+    if (isGateFixed(gate)) {
       setActiveCellMenu(null);
       return;
     }
@@ -239,7 +245,7 @@ export const CircuitBuilder: React.FC<CircuitBuilderProps> = ({
 
   const deleteGate = (row: number, col: number) => {
     const gate = grid[row]?.[col];
-    if (gate?.fixed) return;
+    if (isGateFixed(gate)) return;
     setGrid(prev => {
       const next = prev.map(r => [...r]);
       next[row][col] = null;
@@ -411,7 +417,7 @@ export const CircuitBuilder: React.FC<CircuitBuilderProps> = ({
               )}
             </button>
             <button 
-              onClick={() => setGrid(prev => prev.map(row => row.map(cell => cell?.fixed ? cell : null)))}
+              onClick={() => setGrid(prev => prev.map(row => row.map(cell => isGateFixed(cell) ? cell : null)))}
               style={{
                 fontSize: '11px', padding: '4px 10px', borderRadius: '6px',
                 background: 'rgba(248,113,113,0.1)', border: '1px solid rgba(248,113,113,0.3)',
@@ -629,23 +635,23 @@ export const CircuitBuilder: React.FC<CircuitBuilderProps> = ({
                               height: isControl ? '14px' : '40px',
                               borderRadius: isControl ? '50%' : '6px',
                               background: isControl 
-                                ? (gate.fixed ? 'var(--text-muted)' : 'var(--accent-cyan)')
+                                ? (isGateFixed(gate) ? 'var(--text-muted)' : 'var(--accent-cyan)')
                                 : isMeas 
                                 ? 'hsl(45, 90%, 20%)'
-                                : gate.fixed
+                                : isGateFixed(gate)
                                 ? 'rgba(255, 255, 255, 0.05)'
                                 : 'var(--bg-deep)',
-                              border: `1.5px ${gate.fixed ? 'dashed' : 'solid'} ${
+                              border: `1.5px ${isGateFixed(gate) ? 'dashed' : 'solid'} ${
                                 isControl 
-                                  ? (gate.fixed ? 'var(--text-muted)' : 'var(--accent-cyan)')
+                                  ? (isGateFixed(gate) ? 'var(--text-muted)' : 'var(--accent-cyan)')
                                   : isMeas 
                                   ? 'hsl(45, 100%, 50%)'
-                                  : gate.fixed
+                                  : isGateFixed(gate)
                                   ? 'var(--text-muted)'
                                   : 'var(--accent-purple)'
                               }`,
-                              color: gate.fixed ? 'var(--text-muted)' : isControl ? 'transparent' : 'var(--text-primary)',
-                              boxShadow: isControl && !gate.fixed ? '0 0 8px var(--accent-cyan)' : 'none',
+                              color: isGateFixed(gate) ? 'var(--text-muted)' : isControl ? 'transparent' : 'var(--text-primary)',
+                              boxShadow: isControl && !isGateFixed(gate) ? '0 0 8px var(--accent-cyan)' : 'none',
                               display: 'flex',
                               flexDirection: 'column',
                               alignItems: 'center',
@@ -653,21 +659,21 @@ export const CircuitBuilder: React.FC<CircuitBuilderProps> = ({
                               fontSize: '12px',
                               fontWeight: '800',
                               fontFamily: 'var(--font-mono)',
-                              cursor: gate.fixed ? 'not-allowed' : 'grab',
+                              cursor: isGateFixed(gate) ? 'not-allowed' : 'grab',
                               userSelect: 'none',
                               touchAction: 'none',
                               zIndex: 3,
-                              opacity: gate.fixed ? 0.75 : 1,
+                              opacity: isGateFixed(gate) ? 0.75 : 1,
                             }}
                           >
                             {!isControl && (
                               <>
                                 <span style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
                                   {gate.type.startsWith('M_') ? 'M' + gate.type[2] : gate.type}
-                                  {gate.fixed && <span style={{ fontSize: '10px', opacity: 0.8 }}>🔒</span>}
+                                  {isGateFixed(gate) && <span style={{ fontSize: '10px', opacity: 0.8 }}>🔒</span>}
                                 </span>
                                 {isParam && (
-                                  <span style={{ fontSize: '8px', fontWeight: '500', color: gate.fixed ? 'var(--text-muted)' : 'var(--accent-cyan)' }}>
+                                  <span style={{ fontSize: '8px', fontWeight: '500', color: isGateFixed(gate) ? 'var(--text-muted)' : 'var(--accent-cyan)' }}>
                                     {gate.param || '0'}
                                   </span>
                                 )}

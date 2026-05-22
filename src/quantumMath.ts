@@ -397,15 +397,26 @@ export const parseExpression = (expr: string): number => {
 };
 
 export const parseComplexString = (s: string): Complex => {
-  const trimmed = s.trim();
-  if (trimmed === '1') return { re: 1, im: 0 };
-  if (trimmed === '-1') return { re: -1, im: 0 };
-  if (trimmed === 'i') return { re: 0, im: 1 };
-  if (trimmed === '-i') return { re: 0, im: -1 };
-  if (trimmed === '0') return { re: 0, im: 0 };
-  const val = parseFloat(trimmed);
-  if (!isNaN(val)) return { re: val, im: 0 };
-  return { re: 0, im: 0 };
+  const trimmed = s.trim().replace(/\s+/g, "");
+  const dividedByTwo = trimmed.endsWith('/2');
+  const baseStr = dividedByTwo ? trimmed.slice(0, -2) : trimmed;
+
+  let baseComplex: Complex;
+  if (baseStr === '1' || baseStr === '+1') baseComplex = { re: 1, im: 0 };
+  else if (baseStr === '-1') baseComplex = { re: -1, im: 0 };
+  else if (baseStr === 'i' || baseStr === '+i') baseComplex = { re: 0, im: 1 };
+  else if (baseStr === '-i') baseComplex = { re: 0, im: -1 };
+  else if (baseStr === '0') baseComplex = { re: 0, im: 0 };
+  else {
+    const val = parseFloat(baseStr);
+    if (!isNaN(val)) baseComplex = { re: val, im: 0 };
+    else baseComplex = { re: 0, im: 0 };
+  }
+
+  if (dividedByTwo) {
+    return { re: baseComplex.re / 2, im: baseComplex.im / 2 };
+  }
+  return baseComplex;
 };
 
 // Check if a matrix is unitary (supports complex and string representations)
@@ -415,11 +426,13 @@ export const checkUnitarity = (m: Complex[][] | string[][]): { unitary: boolean;
   for (let i = 0; i < D; i++) {
     for (let j = 0; j < D; j++) {
       const val = m[i][j];
+      let complexVal: Complex;
       if (typeof val === 'string') {
-        parsedMatrix[i].push(parseComplexString(val));
+        complexVal = parseComplexString(val);
       } else {
-        parsedMatrix[i].push(val as Complex);
+        complexVal = { ...(val as Complex) };
       }
+      parsedMatrix[i].push(complexVal);
     }
   }
 

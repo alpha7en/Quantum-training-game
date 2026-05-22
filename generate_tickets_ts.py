@@ -525,7 +525,8 @@ export const ticketsData: Ticket[] = [
         
         matrix_rows_str = []
         for r in matrix_a:
-            matrix_rows_str.append(f"    {json.dumps(r)}")
+            row_with_half = [f"{val}/2" if val != "0" else "0" for val in r]
+            matrix_rows_str.append(f"    {json.dumps(row_with_half)}")
         matrix_str = "[\n" + ",\n".join(matrix_rows_str) + "\n  ]"
         
         escaped_theory_q = q1.replace('"', '\\"').replace('\n', ' ')

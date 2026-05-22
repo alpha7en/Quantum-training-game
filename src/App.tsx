@@ -31,6 +31,7 @@ interface SidebarProps {
   selectedChallengeId: string | null;
   onSelectChallenge: (id: string) => void;
   completedChallenges: string[];
+  isOpen?: boolean;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({
@@ -41,9 +42,10 @@ const Sidebar: React.FC<SidebarProps> = ({
   selectedChallengeId,
   onSelectChallenge,
   completedChallenges,
+  isOpen = false,
 }) => {
   return (
-    <aside className="app-sidebar" style={{
+    <aside className={`app-sidebar${isOpen ? ' open' : ''}`} style={{
       background: 'hsla(222, 40%, 8%, 0.95)',
       borderRight: '1px solid var(--border-muted)',
       overflowY: 'auto',
@@ -546,6 +548,9 @@ const App: React.FC = () => {
   const [selectedId, setSelectedId] = useState(1);
   const [activeChallengeId, setActiveChallengeId] = useState<string | null>(null);
 
+  // Mobile sidebar state
+  const [isSidebarOpen, setSidebarOpen] = useState(false);
+
   // Completed Challenges
   const [completedChallenges, setCompletedChallenges] = useState<string[]>(() => {
     const saved = localStorage.getItem('completedChallenges');
@@ -604,21 +609,33 @@ const App: React.FC = () => {
     return challengeTasks.find(c => c.id === activeChallengeId) || null;
   }, [activeChallengeId]);
 
+  const deepClone = <T,>(obj: T): T => JSON.parse(JSON.stringify(obj));
+
   // Handle switching active items (saving to and loading from cache)
   const switchActiveItem = (
     nextMode: 'exam' | 'challenges',
     nextTicketId: number | null,
     nextChallengeId: string | null
   ) => {
+    // Guard: do nothing if switching to the exact same mode and item
+    if (nextMode === appMode) {
+      if (nextMode === 'exam' && (nextTicketId === null || nextTicketId === selectedId)) {
+        return;
+      }
+      if (nextMode === 'challenges' && (nextChallengeId === null || nextChallengeId === activeChallengeId)) {
+        return;
+      }
+    }
+
     // 1. Save current state to cache
     if (appMode === 'exam') {
-      setTicketGrids(prev => ({ ...prev, [selectedId]: grid }));
-      setTicketInitialStates(prev => ({ ...prev, [selectedId]: initialStates }));
+      setTicketGrids(prev => ({ ...prev, [selectedId]: deepClone(grid) }));
+      setTicketInitialStates(prev => ({ ...prev, [selectedId]: deepClone(initialStates) }));
       setTicketNumQubits(prev => ({ ...prev, [selectedId]: numQubits }));
     } else {
       if (activeChallengeId) {
-        setChallengeGrids(prev => ({ ...prev, [activeChallengeId]: grid }));
-        setChallengeInitialStates(prev => ({ ...prev, [activeChallengeId]: initialStates }));
+        setChallengeGrids(prev => ({ ...prev, [activeChallengeId]: deepClone(grid) }));
+        setChallengeInitialStates(prev => ({ ...prev, [activeChallengeId]: deepClone(initialStates) }));
         setChallengeNumQubits(prev => ({ ...prev, [activeChallengeId]: numQubits }));
       }
     }
@@ -631,8 +648,8 @@ const App: React.FC = () => {
       const cachedNumQubits = ticketNumQubits[targetId];
 
       if (cachedGrid && cachedInitialStates && cachedNumQubits) {
-        setGrid(cachedGrid);
-        setInitialStates(cachedInitialStates);
+        setGrid(deepClone(cachedGrid));
+        setInitialStates(deepClone(cachedInitialStates));
         setNumQubits(cachedNumQubits);
       } else {
         const tk = ticketsData.find(t => t.id === targetId)!;
@@ -661,8 +678,8 @@ const App: React.FC = () => {
       const cachedNumQubits = challengeNumQubits[targetId];
 
       if (cachedGrid && cachedInitialStates && cachedNumQubits) {
-        setGrid(cachedGrid);
-        setInitialStates(cachedInitialStates);
+        setGrid(deepClone(cachedGrid));
+        setInitialStates(deepClone(cachedInitialStates));
         setNumQubits(cachedNumQubits);
       } else {
         const ch = challengeTasks.find(c => c.id === targetId)!;
@@ -670,7 +687,7 @@ const App: React.FC = () => {
         if (ch.fixedGates) {
           ch.fixedGates.forEach(fg => {
             if (fg.row < ch.numQubits && fg.col < 8) {
-              initialGrid[fg.row][fg.col] = fg.gate;
+              initialGrid[fg.row][fg.col] = deepClone(fg.gate);
             }
           });
         }
@@ -691,6 +708,9 @@ const App: React.FC = () => {
         setActiveTab('constructor');
       }
     }
+    
+    // Close mobile drawer on switch
+    setSidebarOpen(false);
   };
 
   // Reset verification results on grid or challenge changes
@@ -1124,13 +1144,36 @@ const App: React.FC = () => {
         selectedChallengeId={activeChallengeId}
         onSelectChallenge={(id) => switchActiveItem('challenges', null, id)}
         completedChallenges={completedChallenges}
+        isOpen={isSidebarOpen}
       />
+
+      {isSidebarOpen && (
+        <div className="sidebar-overlay" onClick={() => setSidebarOpen(false)} />
+      )}
 
       {/* Main Content */}
       <main className="app-main-content" style={{ overflowY: 'auto' }}>
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '20px', flexWrap: 'wrap' }}>
-          <div>
+          <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-start' }}>
+            <button
+              className="mobile-only"
+              onClick={() => setSidebarOpen(true)}
+              style={{
+                background: 'rgba(255, 255, 255, 0.05)',
+                border: '1px solid var(--border-muted)',
+                borderRadius: '8px',
+                color: 'var(--text-primary)',
+                padding: '8px 12px',
+                cursor: 'pointer',
+                fontSize: '20px',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              ☰
+            </button>
+            <div>
             {appMode === 'exam' ? (
               <>
                 <div style={{
@@ -1191,8 +1234,9 @@ const App: React.FC = () => {
                 </>
               )
             )}
+            </div>
           </div>
-          <div style={{ display: 'flex', gap: '10px', flexShrink: 0, flexWrap: 'wrap' }}>
+          <div className="tabs-container">
             {appMode === 'exam' ? (
               <>
                 {tabBtn('theory', '📖 Теория')}
@@ -1213,7 +1257,7 @@ const App: React.FC = () => {
         {/* ── THEORY TAB ────────────────────────────────── */}
         {activeTab === 'theory' && (
           appMode === 'exam' ? (
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: '20px', alignItems: 'start' }}>
+            <div className="responsive-theory-grid">
               <div className="glass-panel" style={{ padding: '28px' }}>
                 <h3 style={{ fontSize: '16px', fontWeight: '700', color: 'var(--accent-cyan)', marginBottom: '16px' }}>
                   📘 Теоретический материал
@@ -1281,7 +1325,7 @@ const App: React.FC = () => {
                       {showUnitary ? 'Скрыть AA†' : 'Проверить'}
                     </button>
                   </div>
-                  <MatrixDisplay matrix={ticket.matrixA} scale="½" highlighted />
+                  <MatrixDisplay matrix={ticket.matrixA} highlighted />
                   <div style={{ marginTop: '10px', textAlign: 'center', fontSize: '12px' }}>
                     <span style={{
                       color: sim.unitarity.unitary ? '#4ade80' : '#f87171',
@@ -1522,6 +1566,7 @@ const App: React.FC = () => {
                 lockQubits={appMode === 'challenges' ? activeChallenge?.lockQubits : undefined}
                 lockInitialStates={appMode === 'challenges' ? activeChallenge?.lockInitialStates : undefined}
                 allowedParams={appMode === 'challenges' ? activeChallenge?.allowedParams : undefined}
+                appMode={appMode}
               />
             </div>
             {appMode === 'challenges' && renderVerificationPanel()}
