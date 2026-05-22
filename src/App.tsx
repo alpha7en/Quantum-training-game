@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { ticketsData } from './ticketsData';
 import {
   Complex, StateVector, DensityMatrix4x4,
@@ -604,11 +604,20 @@ const getQubitInitialStateFromPreset = (preset: '0' | '1' | '+' | '-'): QubitIni
 // ── Main App ──────────────────────────────────────────────────────────────────
 const App: React.FC = () => {
   // App Mode State
-  const [appMode, setAppMode] = useState<'exam' | 'challenges' | 'sandbox'>('exam');
+  const [appMode, setAppMode] = useState<'exam' | 'challenges' | 'sandbox'>(() => {
+    const saved = localStorage.getItem('appMode');
+    return (saved as any) || 'exam';
+  });
   
   // Selected IDs
-  const [selectedId, setSelectedId] = useState(1);
-  const [activeChallengeId, setActiveChallengeId] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<number>(() => {
+    const saved = localStorage.getItem('selectedId');
+    return saved ? parseInt(saved, 10) : 1;
+  });
+  const [activeChallengeId, setActiveChallengeId] = useState<string | null>(() => {
+    const saved = localStorage.getItem('activeChallengeId');
+    return saved || (challengeTasks[0]?.id || null);
+  });
 
   // Mobile sidebar state
   const [isSidebarOpen, setSidebarOpen] = useState(false);
@@ -624,44 +633,142 @@ const App: React.FC = () => {
   }, [completedChallenges]);
 
   // Caching states for Exam mode
-  const [ticketGrids, setTicketGrids] = useState<{ [id: number]: (GateInstance | null)[][] }>({});
-  const [ticketInitialStates, setTicketInitialStates] = useState<{ [id: number]: QubitInitialState[] }>({});
-  const [ticketNumQubits, setTicketNumQubits] = useState<{ [id: number]: number }>({});
+  const [ticketGrids, setTicketGrids] = useState<{ [id: number]: (GateInstance | null)[][] }>(() => {
+    const saved = localStorage.getItem('ticketGrids');
+    return saved ? JSON.parse(saved) : {};
+  });
+  const [ticketInitialStates, setTicketInitialStates] = useState<{ [id: number]: QubitInitialState[] }>(() => {
+    const saved = localStorage.getItem('ticketInitialStates');
+    return saved ? JSON.parse(saved) : {};
+  });
+  const [ticketNumQubits, setTicketNumQubits] = useState<{ [id: number]: number }>(() => {
+    const saved = localStorage.getItem('ticketNumQubits');
+    return saved ? JSON.parse(saved) : {};
+  });
 
   // Caching states for Challenges mode
-  const [challengeGrids, setChallengeGrids] = useState<{ [id: string]: (GateInstance | null)[][] }>({});
-  const [challengeInitialStates, setChallengeInitialStates] = useState<{ [id: string]: QubitInitialState[] }>({});
-  const [challengeNumQubits, setChallengeNumQubits] = useState<{ [id: string]: number }>({});
+  const [challengeGrids, setChallengeGrids] = useState<{ [id: string]: (GateInstance | null)[][] }>(() => {
+    const saved = localStorage.getItem('challengeGrids');
+    return saved ? JSON.parse(saved) : {};
+  });
+  const [challengeInitialStates, setChallengeInitialStates] = useState<{ [id: string]: QubitInitialState[] }>(() => {
+    const saved = localStorage.getItem('challengeInitialStates');
+    return saved ? JSON.parse(saved) : {};
+  });
+  const [challengeNumQubits, setChallengeNumQubits] = useState<{ [id: string]: number }>(() => {
+    const saved = localStorage.getItem('challengeNumQubits');
+    return saved ? JSON.parse(saved) : {};
+  });
 
   // Caching states for Sandbox mode
-  const [sandboxGrid, setSandboxGrid] = useState<(GateInstance | null)[][]>(() =>
-    Array.from({ length: 3 }, () => Array.from({ length: 8 }, () => null))
-  );
-  const [sandboxNumQubits, setSandboxNumQubits] = useState<number>(3);
-  const [sandboxInitialStates, setSandboxInitialStates] = useState<QubitInitialState[]>(() =>
-    Array.from({ length: 3 }, () => ({ type: 'pure', preset: '0', alpha: cOne(), beta: cZero(), p0: 1, p1: 0 }))
-  );
+  const [sandboxGrid, setSandboxGrid] = useState<(GateInstance | null)[][]>(() => {
+    const saved = localStorage.getItem('sandboxGrid');
+    return saved ? JSON.parse(saved) : Array.from({ length: 3 }, () => Array.from({ length: 8 }, () => null));
+  });
+  const [sandboxNumQubits, setSandboxNumQubits] = useState<number>(() => {
+    const saved = localStorage.getItem('sandboxNumQubits');
+    return saved ? parseInt(saved, 10) : 3;
+  });
+  const [sandboxInitialStates, setSandboxInitialStates] = useState<QubitInitialState[]>(() => {
+    const saved = localStorage.getItem('sandboxInitialStates');
+    return saved ? JSON.parse(saved) : Array.from({ length: 3 }, () => ({ type: 'pure', preset: '0', alpha: cOne(), beta: cZero(), p0: 1, p1: 0 } as QubitInitialState));
+  });
 
   // Current builder canvas state
-  const [grid, setGrid] = useState<(GateInstance | null)[][]>(() =>
-    Array.from({ length: 2 }, () => Array.from({ length: 8 }, () => null))
-  );
-  const [numQubits, setNumQubits] = useState(2);
-  const [initialStates, setInitialStates] = useState<QubitInitialState[]>(() => {
-    const tk = ticketsData.find(t => t.id === 1)!;
-    return [
-      { type: 'pure', preset: '0', alpha: cOne(), beta: cZero(), p0: 1, p1: 0 },
-      {
-        type: 'pure',
-        preset: 'custom-pure',
-        alpha: tk.uVec[0],
-        beta: tk.uVec[1],
-        p0: tk.uVec[0].re**2 + tk.uVec[0].im**2,
-        p1: tk.uVec[1].re**2 + tk.uVec[1].im**2,
-        label: '|u⟩',
+  const [grid, setGrid] = useState<(GateInstance | null)[][]>(() => {
+    const startMode = localStorage.getItem('appMode') || 'exam';
+    if (startMode === 'exam') {
+      const targetId = parseInt(localStorage.getItem('selectedId') || '1', 10);
+      const savedTicketGrids = localStorage.getItem('ticketGrids');
+      const parsed = savedTicketGrids ? JSON.parse(savedTicketGrids) : {};
+      if (parsed[targetId]) return parsed[targetId];
+      return Array.from({ length: 2 }, () => Array.from({ length: 8 }, () => null));
+    } else if (startMode === 'challenges') {
+      const targetId = localStorage.getItem('activeChallengeId') || challengeTasks[0]?.id;
+      const savedChallengeGrids = localStorage.getItem('challengeGrids');
+      const parsed = savedChallengeGrids ? JSON.parse(savedChallengeGrids) : {};
+      if (parsed[targetId]) return parsed[targetId];
+      const ch = challengeTasks.find(c => c.id === targetId);
+      if (ch) {
+        const initialGrid = Array.from({ length: ch.numQubits }, () => Array.from({ length: 8 }, () => null));
+        if (ch.fixedGates) {
+          ch.fixedGates.forEach(fg => {
+            if (fg.row < ch.numQubits && fg.col < 8) {
+              initialGrid[fg.row][fg.col] = JSON.parse(JSON.stringify(fg.gate));
+            }
+          });
+        }
+        return initialGrid;
       }
-    ];
+      return Array.from({ length: 2 }, () => Array.from({ length: 8 }, () => null));
+    } else {
+      const savedSandboxGrid = localStorage.getItem('sandboxGrid');
+      return savedSandboxGrid ? JSON.parse(savedSandboxGrid) : Array.from({ length: 3 }, () => Array.from({ length: 8 }, () => null));
+    }
   });
+
+  const [numQubits, setNumQubits] = useState<number>(() => {
+    const startMode = localStorage.getItem('appMode') || 'exam';
+    if (startMode === 'exam') {
+      const targetId = parseInt(localStorage.getItem('selectedId') || '1', 10);
+      const savedTicketNumQubits = localStorage.getItem('ticketNumQubits');
+      const parsed = savedTicketNumQubits ? JSON.parse(savedTicketNumQubits) : {};
+      return parsed[targetId] || 2;
+    } else if (startMode === 'challenges') {
+      const targetId = localStorage.getItem('activeChallengeId') || challengeTasks[0]?.id;
+      const savedChallengeNumQubits = localStorage.getItem('challengeNumQubits');
+      const parsed = savedChallengeNumQubits ? JSON.parse(savedChallengeNumQubits) : {};
+      if (parsed[targetId]) return parsed[targetId];
+      const ch = challengeTasks.find(c => c.id === targetId);
+      return ch ? ch.numQubits : 2;
+    } else {
+      const savedSandboxNumQubits = localStorage.getItem('sandboxNumQubits');
+      return savedSandboxNumQubits ? parseInt(savedSandboxNumQubits, 10) : 3;
+    }
+  });
+
+  const [initialStates, setInitialStates] = useState<QubitInitialState[]>(() => {
+    const startMode = localStorage.getItem('appMode') || 'exam';
+    if (startMode === 'exam') {
+      const targetId = parseInt(localStorage.getItem('selectedId') || '1', 10);
+      const savedTicketInitialStates = localStorage.getItem('ticketInitialStates');
+      const parsed = savedTicketInitialStates ? JSON.parse(savedTicketInitialStates) : {};
+      if (parsed[targetId]) return parsed[targetId];
+      const tk = ticketsData.find(t => t.id === targetId) || ticketsData[0];
+      return [
+        { type: 'pure', preset: '0', alpha: cOne(), beta: cZero(), p0: 1, p1: 0 },
+        {
+          type: 'pure',
+          preset: 'custom-pure',
+          alpha: tk.uVec[0],
+          beta: tk.uVec[1],
+          p0: tk.uVec[0].re**2 + tk.uVec[0].im**2,
+          p1: tk.uVec[1].re**2 + tk.uVec[1].im**2,
+          label: '|u⟩',
+        }
+      ];
+    } else if (startMode === 'challenges') {
+      const targetId = localStorage.getItem('activeChallengeId') || challengeTasks[0]?.id;
+      const savedChallengeInitialStates = localStorage.getItem('challengeInitialStates');
+      const parsed = savedChallengeInitialStates ? JSON.parse(savedChallengeInitialStates) : {};
+      if (parsed[targetId]) return parsed[targetId];
+      const ch = challengeTasks.find(c => c.id === targetId);
+      if (ch) {
+        return ch.initialPreset.map(p => getQubitInitialStateFromPreset(p as any));
+      }
+      return Array.from({ length: 2 }, () => ({ type: 'pure', preset: '0', alpha: cOne(), beta: cZero(), p0: 1, p1: 0 } as QubitInitialState));
+    } else {
+      const savedSandboxInitialStates = localStorage.getItem('sandboxInitialStates');
+      return savedSandboxInitialStates ? JSON.parse(savedSandboxInitialStates) : Array.from({ length: 3 }, () => ({ type: 'pure', preset: '0', alpha: cOne(), beta: cZero(), p0: 1, p1: 0 } as QubitInitialState));
+    }
+  });
+
+  // Track the loaded configuration key to prevent overwriting during switch transition batching
+  const loadedItemKeyRef = useRef<string>('');
+  const currentItemKey = `${appMode}-${appMode === 'exam' ? selectedId : appMode === 'challenges' ? activeChallengeId : 'sandbox'}`;
+  if (!loadedItemKeyRef.current) {
+    loadedItemKeyRef.current = currentItemKey;
+  }
 
   // Verification states for challenges
   const [isChecking, setIsChecking] = useState(false);
@@ -681,6 +788,83 @@ const App: React.FC = () => {
   }, [activeChallengeId]);
 
   const deepClone = <T,>(obj: T): T => JSON.parse(JSON.stringify(obj));
+
+  // Sync basic configurations to localStorage
+  useEffect(() => {
+    localStorage.setItem('appMode', appMode);
+  }, [appMode]);
+
+  useEffect(() => {
+    localStorage.setItem('selectedId', String(selectedId));
+  }, [selectedId]);
+
+  useEffect(() => {
+    if (activeChallengeId) {
+      localStorage.setItem('activeChallengeId', activeChallengeId);
+    }
+  }, [activeChallengeId]);
+
+  // Sync cached states to localStorage on change
+  useEffect(() => {
+    localStorage.setItem('ticketGrids', JSON.stringify(ticketGrids));
+  }, [ticketGrids]);
+
+  useEffect(() => {
+    localStorage.setItem('ticketInitialStates', JSON.stringify(ticketInitialStates));
+  }, [ticketInitialStates]);
+
+  useEffect(() => {
+    localStorage.setItem('ticketNumQubits', JSON.stringify(ticketNumQubits));
+  }, [ticketNumQubits]);
+
+  useEffect(() => {
+    localStorage.setItem('challengeGrids', JSON.stringify(challengeGrids));
+  }, [challengeGrids]);
+
+  useEffect(() => {
+    localStorage.setItem('challengeInitialStates', JSON.stringify(challengeInitialStates));
+  }, [challengeInitialStates]);
+
+  useEffect(() => {
+    localStorage.setItem('challengeNumQubits', JSON.stringify(challengeNumQubits));
+  }, [challengeNumQubits]);
+
+  useEffect(() => {
+    localStorage.setItem('sandboxGrid', JSON.stringify(sandboxGrid));
+  }, [sandboxGrid]);
+
+  useEffect(() => {
+    localStorage.setItem('sandboxInitialStates', JSON.stringify(sandboxInitialStates));
+  }, [sandboxInitialStates]);
+
+  useEffect(() => {
+    localStorage.setItem('sandboxNumQubits', String(sandboxNumQubits));
+  }, [sandboxNumQubits]);
+
+  // Sync active canvas edits into cache structures instantly on modification
+  useEffect(() => {
+    if (loadedItemKeyRef.current !== currentItemKey) {
+      // Transition in progress, update ref to match the new item being loaded
+      loadedItemKeyRef.current = currentItemKey;
+      return;
+    }
+
+    if (appMode === 'exam') {
+      setTicketGrids(prev => ({ ...prev, [selectedId]: grid }));
+      setTicketInitialStates(prev => ({ ...prev, [selectedId]: initialStates }));
+      setTicketNumQubits(prev => ({ ...prev, [selectedId]: numQubits }));
+    } else if (appMode === 'challenges') {
+      if (activeChallengeId) {
+        setChallengeGrids(prev => ({ ...prev, [activeChallengeId]: grid }));
+        setChallengeInitialStates(prev => ({ ...prev, [activeChallengeId]: initialStates }));
+        setChallengeNumQubits(prev => ({ ...prev, [activeChallengeId]: numQubits }));
+      }
+    } else if (appMode === 'sandbox') {
+      setSandboxGrid(grid);
+      setSandboxInitialStates(initialStates);
+      setSandboxNumQubits(numQubits);
+    }
+  }, [grid, initialStates, numQubits, appMode, selectedId, activeChallengeId, currentItemKey]);
 
   // Handle switching active items (saving to and loading from cache)
   const switchActiveItem = (

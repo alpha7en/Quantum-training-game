@@ -8,10 +8,109 @@ interface MatrixProps {
   highlighted?: boolean;
 }
 
-const entryColor = (entry: string) => {
-  if (entry.includes('i')) return 'var(--accent-purple)';
-  if (entry.includes('-')) return 'var(--accent-pink)';
-  return 'var(--text-primary)';
+const getMatrixCellInfo = (entry: string): { text: string; type: 'zero' | 'one' | 'neg-one' | 'i' | 'neg-i' | 'half' | 'neg-half' | 'half-i' | 'neg-half-i' | 'normal' } => {
+  const trimmed = entry.trim();
+  if (trimmed === '0' || trimmed === '0/2') return { text: '0', type: 'zero' };
+  if (trimmed === '1') return { text: '1', type: 'one' };
+  if (trimmed === '-1') return { text: '-1', type: 'neg-one' };
+  if (trimmed === 'i') return { text: 'i', type: 'i' };
+  if (trimmed === '-i') return { text: '-i', type: 'neg-i' };
+  if (trimmed === '1/2') return { text: '1/2', type: 'half' };
+  if (trimmed === '-1/2') return { text: '-1/2', type: 'neg-half' };
+  if (trimmed === 'i/2') return { text: 'i/2', type: 'half-i' };
+  if (trimmed === '-i/2') return { text: '-i/2', type: 'neg-half-i' };
+  return { text: trimmed, type: 'normal' };
+};
+
+const formatComplexCell = (c: Complex, digits: number = 3): { text: string; type: 'zero' | 'one' | 'neg-one' | 'i' | 'neg-i' | 'half' | 'neg-half' | 'half-i' | 'neg-half-i' | 'normal' } => {
+  const re = c.re;
+  const im = c.im;
+  const isNear = (val: number, target: number) => Math.abs(val - target) < 1e-4;
+
+  if (isNear(re, 0) && isNear(im, 0)) return { text: '0', type: 'zero' };
+  if (isNear(re, 1) && isNear(im, 0)) return { text: '1', type: 'one' };
+  if (isNear(re, -1) && isNear(im, 0)) return { text: '-1', type: 'neg-one' };
+  if (isNear(re, 0) && isNear(im, 1)) return { text: 'i', type: 'i' };
+  if (isNear(re, 0) && isNear(im, -1)) return { text: '-i', type: 'neg-i' };
+
+  if (isNear(re, 0.5) && isNear(im, 0)) return { text: '1/2', type: 'half' };
+  if (isNear(re, -0.5) && isNear(im, 0)) return { text: '-1/2', type: 'neg-half' };
+  if (isNear(re, 0) && isNear(im, 0.5)) return { text: 'i/2', type: 'half-i' };
+  if (isNear(re, 0) && isNear(im, -0.5)) return { text: '-i/2', type: 'neg-half-i' };
+
+  return { text: cToString(c, digits), type: 'normal' };
+};
+
+const getCellStyle = (type: string): React.CSSProperties => {
+  const baseStyle: React.CSSProperties = {
+    minWidth: '64px',
+    height: '28px',
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: '4px',
+    fontFamily: 'var(--font-mono)',
+    fontSize: '13px',
+    textAlign: 'center',
+    transition: 'all 0.2s ease',
+    border: '1px solid transparent',
+    padding: '2px 6px',
+    boxSizing: 'border-box',
+  };
+
+  switch (type) {
+    case 'zero':
+      return {
+        ...baseStyle,
+        color: 'rgba(255, 255, 255, 0.22)',
+        background: 'rgba(255, 255, 255, 0.015)',
+      };
+    case 'one':
+    case 'half':
+      return {
+        ...baseStyle,
+        color: 'var(--accent-cyan)',
+        background: 'rgba(0, 242, 254, 0.08)',
+        border: '1px solid rgba(0, 242, 254, 0.2)',
+        fontWeight: '600',
+        textShadow: '0 0 8px rgba(0, 242, 254, 0.2)',
+      };
+    case 'neg-one':
+    case 'neg-half':
+      return {
+        ...baseStyle,
+        color: 'var(--accent-pink)',
+        background: 'rgba(255, 0, 127, 0.08)',
+        border: '1px solid rgba(255, 0, 127, 0.2)',
+        fontWeight: '600',
+        textShadow: '0 0 8px rgba(255, 0, 127, 0.2)',
+      };
+    case 'i':
+    case 'half-i':
+      return {
+        ...baseStyle,
+        color: 'var(--accent-purple)',
+        background: 'rgba(189, 93, 233, 0.08)',
+        border: '1px solid rgba(189, 93, 233, 0.2)',
+        fontWeight: '600',
+        textShadow: '0 0 8px rgba(189, 93, 233, 0.2)',
+      };
+    case 'neg-i':
+    case 'neg-half-i':
+      return {
+        ...baseStyle,
+        color: 'var(--accent-blue)',
+        background: 'rgba(0, 153, 255, 0.08)',
+        border: '1px solid rgba(0, 153, 255, 0.2)',
+        fontWeight: '600',
+        textShadow: '0 0 8px rgba(0, 153, 255, 0.2)',
+      };
+    default:
+      return {
+        ...baseStyle,
+        color: 'var(--text-primary)',
+      };
+  }
 };
 
 export const MatrixDisplay: React.FC<MatrixProps> = ({ matrix, scale, title, highlighted }) => {
@@ -31,7 +130,7 @@ export const MatrixDisplay: React.FC<MatrixProps> = ({ matrix, scale, title, hig
         <div style={{
           display: 'grid',
           gridTemplateColumns: `repeat(${matrix[0].length}, 1fr)`,
-          gap: '6px 14px',
+          gap: '6px 10px',
           padding: '14px 20px',
           border: `2px solid ${highlighted ? 'var(--accent-cyan)' : 'var(--text-secondary)'}`,
           borderTop: 'none',
@@ -55,19 +154,17 @@ export const MatrixDisplay: React.FC<MatrixProps> = ({ matrix, scale, title, hig
             background: highlighted ? 'var(--accent-cyan)' : 'var(--text-secondary)',
           }}/>
           {matrix.flatMap((row, i) =>
-            row.map((entry, j) => (
-              <span
-                key={`${i}-${j}`}
-                style={{
-                  minWidth: '28px',
-                  textAlign: 'center',
-                  color: entryColor(entry),
-                  fontWeight: (entry !== '1' && entry !== '1/2') ? '600' : '400',
-                }}
-              >
-                {entry}
-              </span>
-            ))
+            row.map((entry, j) => {
+              const cellInfo = getMatrixCellInfo(entry);
+              return (
+                <span
+                  key={`${i}-${j}`}
+                  style={getCellStyle(cellInfo.type)}
+                >
+                  {cellInfo.text}
+                </span>
+              );
+            })
           )}
         </div>
       </div>
@@ -92,35 +189,42 @@ export const ComplexMatrixDisplay: React.FC<ComplexMatrixDisplayProps> = ({
           {title}
         </div>
       )}
-      <div style={{ display: 'inline-block', maxWidth: '100%', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+      <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', maxWidth: '100%', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
         <div style={{
           display: 'grid',
           gridTemplateColumns: `repeat(${size}, 1fr)`,
-          gap: '6px 12px',
-          padding: '12px 18px',
+          gap: '8px 12px',
+          padding: '12px 20px',
           border: '2px solid var(--border-muted)',
           borderTop: 'none',
           borderBottom: 'none',
           borderRadius: '2px',
-          background: 'rgba(0,0,0,0.2)',
+          background: 'rgba(0,0,0,0.25)',
           fontFamily: 'var(--font-mono)',
-          fontSize: '12px',
+          fontSize: '13px',
           alignItems: 'center',
           justifyItems: 'center',
+          position: 'relative',
           minWidth: `${size * 80}px`,
         }}>
+          {/* Left bracket */}
+          <div style={{
+            position: 'absolute', left: 0, top: 0, bottom: 0, width: '2px',
+            background: 'var(--border-muted)',
+          }}/>
+          <div style={{
+            position: 'absolute', right: 0, top: 0, bottom: 0, width: '2px',
+            background: 'var(--border-muted)',
+          }}/>
           {matrix.flatMap((row, i) =>
             row.map((entry, j) => {
-              const isImag = Math.abs(entry.re) < 1e-6;
-              const isZero = Math.abs(entry.re) < 1e-6 && Math.abs(entry.im) < 1e-6;
-              const color = isZero
-                ? 'var(--text-muted)'
-                : isImag
-                ? 'var(--accent-purple)'
-                : 'var(--text-primary)';
+              const cellInfo = formatComplexCell(entry, digits);
               return (
-                <span key={`${i}-${j}`} style={{ color, minWidth: '60px', textAlign: 'center' }}>
-                  {cToString(entry, digits)}
+                <span
+                  key={`${i}-${j}`}
+                  style={getCellStyle(cellInfo.type)}
+                >
+                  {cellInfo.text}
                 </span>
               );
             })

@@ -69,6 +69,17 @@ export const CircuitBuilder: React.FC<CircuitBuilderProps> = ({
     setSimulationResult(null);
   }, [grid, initialStates]);
 
+  const sandboxUnitary = React.useMemo(() => {
+    if (appMode !== 'sandbox') return null;
+    try {
+      const res = runCircuit(numQubits, initialStates, grid);
+      return res.finalUnitary;
+    } catch (e) {
+      return null;
+    }
+  }, [grid, numQubits, initialStates, appMode]);
+
+
   const handleRunSimulation = () => {
     if (isSimulating) return;
     setIsSimulating(true);
@@ -743,29 +754,29 @@ export const CircuitBuilder: React.FC<CircuitBuilderProps> = ({
       </div>
 
       {/* ── SIMULATION RESULTS PANEL ────────────────────── */}
-      {simulationResult && (
+      {(simulationResult || (appMode === 'sandbox' && sandboxUnitary)) && (
         <div className="glass-panel" style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-muted)', paddingBottom: '12px' }}>
             <h3 style={{ fontSize: '15px', fontWeight: '700', color: 'var(--accent-cyan)', margin: 0 }}>
-              📊 Результаты Симуляции Конструктора
+              {appMode === 'sandbox' ? '🧮 Унитарная Матрица и Результаты' : '📊 Результаты Симуляции Конструктора'}
             </h3>
             <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
               Сетка: {numQubits} куб. × {numColumns} тактов
             </span>
           </div>
 
-          {/* If sandbox mode, show the full unitary matrix of the circuit */}
-          {appMode === 'sandbox' && (
+          {/* If sandbox mode, show the full unitary matrix of the circuit in real-time */}
+          {appMode === 'sandbox' && sandboxUnitary && (
             <div className="glass-panel" style={{ padding: '20px', background: 'rgba(0,0,0,0.15)', border: '1px solid var(--border-muted)', borderRadius: '10px' }}>
               <h4 style={{ fontSize: '14px', fontWeight: '700', color: 'var(--accent-cyan)', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                🧮 Полная унитарная матрица цепи U
+                🧮 Полная унитарная матрица цепи U (в реальном времени)
               </h4>
               <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '16px', lineHeight: 1.5 }}>
                 Эквивалентная унитарная матрица, описывающая действие всей последовательности гейтов на систему из {numQubits} кубитов.
               </p>
               <div style={{ overflowX: 'auto', maxWidth: '100%', WebkitOverflowScrolling: 'touch' }}>
                 <ComplexMatrixDisplay
-                  matrix={simulationResult.finalUnitary}
+                  matrix={sandboxUnitary}
                   size={1 << numQubits}
                   digits={4}
                 />
@@ -773,166 +784,171 @@ export const CircuitBuilder: React.FC<CircuitBuilderProps> = ({
             </div>
           )}
 
-          {/* Step selection slider */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', background: 'rgba(0,0,0,0.2)', padding: '16px', borderRadius: '10px', border: '1px solid var(--border-muted)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-secondary)' }}>
-                Шаг симуляции (такт t): <span style={{ color: 'var(--accent-cyan)', fontFamily: 'var(--font-mono)' }}>t = {simStep}</span>
-              </span>
-              <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
-                {simStep === 0 ? 'Начальное состояние' : `После такта ${simStep}`}
-              </span>
-            </div>
-            
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <input
-                type="range"
-                min="0"
-                max={numColumns}
-                value={simStep}
-                onChange={e => setSimStep(parseInt(e.target.value))}
-                style={{ flex: 1, accentColor: 'var(--accent-cyan)', cursor: 'pointer' }}
-              />
-              <div style={{ display: 'flex', gap: '4px' }}>
-                <button
-                  onClick={() => setSimStep(prev => Math.max(0, prev - 1))}
-                  disabled={simStep === 0}
-                  className="btn-secondary"
-                  style={{ padding: '4px 8px', fontSize: '12px' }}
-                >
-                  ◀
-                </button>
-                <button
-                  onClick={() => setSimStep(prev => Math.min(numColumns, prev + 1))}
-                  disabled={simStep === numColumns}
-                  className="btn-secondary"
-                  style={{ padding: '4px 8px', fontSize: '12px' }}
-                >
-                  ▶
-                </button>
-              </div>
-            </div>
-            
-            {/* Step markers indicator */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0 4px', fontSize: '10px', color: 'var(--text-muted)' }}>
-              {Array.from({ length: numColumns + 1 }).map((_, stepIdx) => (
-                <span 
-                  key={stepIdx} 
-                  onClick={() => setSimStep(stepIdx)}
-                  style={{ 
-                    cursor: 'pointer', 
-                    color: simStep === stepIdx ? 'var(--accent-cyan)' : 'var(--text-muted)',
-                    fontWeight: simStep === stepIdx ? '700' : '400'
-                  }}
-                >
-                  t={stepIdx}
-                </span>
-              ))}
-            </div>
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', alignItems: 'start' }}>
-            {/* Left Column: State representation */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-              {simulationResult.stepsStateVectors[simStep] ? (
-                <div className="glass-panel" style={{ padding: '16px', background: 'rgba(0,0,0,0.1)' }}>
-                  <h4 style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '12px', fontWeight: '600' }}>
-                    Вектор Состояния |ψ⟩ (Чистое состояние)
-                  </h4>
-                  <StateVectorDisplay state={simulationResult.stepsStateVectors[simStep]!} />
-                </div>
-              ) : (
-                <div className="glass-panel" style={{ padding: '16px', background: 'rgba(0,0,0,0.1)', textAlign: 'center' }}>
-                  <span style={{ fontSize: '12px', color: 'var(--accent-pink)' }}>
-                    ⚠️ Смешанное состояние (Вектор состояния не определен)
+          {/* Simulation steps etc, only render if simulationResult is available */}
+          {simulationResult && (
+            <>
+              {/* Step selection slider */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', background: 'rgba(0,0,0,0.2)', padding: '16px', borderRadius: '10px', border: '1px solid var(--border-muted)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-secondary)' }}>
+                    Шаг симуляции (такт t): <span style={{ color: 'var(--accent-cyan)', fontFamily: 'var(--font-mono)' }}>t = {simStep}</span>
+                  </span>
+                  <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+                    {simStep === 0 ? 'Начальное состояние' : `После такта ${simStep}`}
                   </span>
                 </div>
-              )}
-
-              <div className="glass-panel" style={{ padding: '16px', background: 'rgba(0,0,0,0.1)', overflowX: 'auto' }}>
-                <h4 style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '12px', fontWeight: '600' }}>
-                  Матрица плотности ρ
-                </h4>
-                <ComplexMatrixDisplay 
-                  matrix={simulationResult.stepsDensityMatrices[simStep]} 
-                  size={1 << numQubits} 
-                  digits={3} 
-                />
-              </div>
-            </div>
-
-            {/* Right Column: Measurement Probabilities & Bloch Spheres */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-              {/* Measurement Probabilities */}
-              <div className="glass-panel" style={{ padding: '16px', background: 'rgba(0,0,0,0.1)' }}>
-                <h4 style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '12px', fontWeight: '600' }}>
-                  Вероятности Измерения Всей Системы
-                </h4>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                  {(() => {
-                    const rho = simulationResult.stepsDensityMatrices[simStep];
-                    const D = 1 << numQubits;
-                    const probs = Array.from({ length: D }, (_, idx) => {
-                      const prob = rho[idx]?.[idx]?.re || 0;
-                      const label = `|${idx.toString(2).padStart(numQubits, '0')}⟩`;
-                      return { label, prob };
-                    });
-
-                    return probs.map(({ label, prob }) => (
-                      <div key={label}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '3px' }}>
-                          <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>{label}</span>
-                          <span style={{ fontFamily: 'var(--font-mono)', color: prob > 0.001 ? 'var(--accent-cyan)' : 'var(--text-muted)', fontWeight: '600' }}>
-                            {(prob * 100).toFixed(2)}%
-                          </span>
-                        </div>
-                        <div style={{ height: '6px', background: 'rgba(255,255,255,0.05)', borderRadius: '3px', overflow: 'hidden' }}>
-                          <div style={{
-                            width: `${prob * 100}%`, height: '100%',
-                            background: 'linear-gradient(90deg, var(--accent-cyan), var(--accent-purple))',
-                            borderRadius: '3px', transition: 'width 0.4s ease',
-                          }} />
-                        </div>
-                      </div>
-                    ));
-                  })()}
+                
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <input
+                    type="range"
+                    min="0"
+                    max={numColumns}
+                    value={simStep}
+                    onChange={e => setSimStep(parseInt(e.target.value))}
+                    style={{ flex: 1, accentColor: 'var(--accent-cyan)', cursor: 'pointer' }}
+                  />
+                  <div style={{ display: 'flex', gap: '4px' }}>
+                    <button
+                      onClick={() => setSimStep(prev => Math.max(0, prev - 1))}
+                      disabled={simStep === 0}
+                      className="btn-secondary"
+                      style={{ padding: '4px 8px', fontSize: '12px' }}
+                    >
+                      ◀
+                    </button>
+                    <button
+                      onClick={() => setSimStep(prev => Math.min(numColumns, prev + 1))}
+                      disabled={simStep === numColumns}
+                      className="btn-secondary"
+                      style={{ padding: '4px 8px', fontSize: '12px' }}
+                    >
+                      ▶
+                    </button>
+                  </div>
+                </div>
+                
+                {/* Step markers indicator */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0 4px', fontSize: '10px', color: 'var(--text-muted)' }}>
+                  {Array.from({ length: numColumns + 1 }).map((_, stepIdx) => (
+                    <span 
+                      key={stepIdx} 
+                      onClick={() => setSimStep(stepIdx)}
+                      style={{ 
+                        cursor: 'pointer', 
+                        color: simStep === stepIdx ? 'var(--accent-cyan)' : 'var(--text-muted)',
+                        fontWeight: simStep === stepIdx ? '700' : '400'
+                      }}
+                    >
+                      t={stepIdx}
+                    </span>
+                  ))}
                 </div>
               </div>
 
-              {/* Bloch Spheres Grid */}
-              <div className="glass-panel" style={{ padding: '16px', background: 'rgba(0,0,0,0.1)' }}>
-                <h4 style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '16px', fontWeight: '600' }}>
-                  Сферы Блоха для каждого кубита
-                </h4>
-                <div style={{ 
-                  display: 'grid', 
-                  gridTemplateColumns: numQubits > 1 ? '1fr 1fr' : '1fr', 
-                  gap: '12px' 
-                }}>
-                  {Array.from({ length: numQubits }).map((_, qubitIdx) => {
-                    const rho = simulationResult.stepsDensityMatrices[simStep];
-                    const rho_q = getReducedDensityMatrix(rho, qubitIdx, numQubits);
-                    const bloch = getBlochVector(rho_q);
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', alignItems: 'start' }}>
+                {/* Left Column: State representation */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                  {simulationResult.stepsStateVectors[simStep] ? (
+                    <div className="glass-panel" style={{ padding: '16px', background: 'rgba(0,0,0,0.1)' }}>
+                      <h4 style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '12px', fontWeight: '600' }}>
+                        Вектор Состояния |ψ⟩ (Чистое состояние)
+                      </h4>
+                      <StateVectorDisplay state={simulationResult.stepsStateVectors[simStep]!} />
+                    </div>
+                  ) : (
+                    <div className="glass-panel" style={{ padding: '16px', background: 'rgba(0,0,0,0.1)', textAlign: 'center' }}>
+                      <span style={{ fontSize: '12px', color: 'var(--accent-pink)' }}>
+                        ⚠️ Смешанное состояние (Вектор состояния не определен)
+                      </span>
+                    </div>
+                  )}
 
-                    return (
-                      <div key={qubitIdx} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                        <div style={{ width: '100%', maxWidth: '160px' }}>
-                          <BlochSphere 
-                            vector={bloch} 
-                            title={`Кубит Q_${qubitIdx}`} 
-                          />
-                        </div>
-                        <span style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px', fontFamily: 'var(--font-mono)' }}>
-                          x: {bloch.x.toFixed(2)}, y: {bloch.y.toFixed(2)}, z: {bloch.z.toFixed(2)}
-                        </span>
-                      </div>
-                    );
-                  })}
+                  <div className="glass-panel" style={{ padding: '16px', background: 'rgba(0,0,0,0.1)', overflowX: 'auto' }}>
+                    <h4 style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '12px', fontWeight: '600' }}>
+                      Матрица плотности ρ
+                    </h4>
+                    <ComplexMatrixDisplay 
+                      matrix={simulationResult.stepsDensityMatrices[simStep]} 
+                      size={1 << numQubits} 
+                      digits={3} 
+                    />
+                  </div>
+                </div>
+
+                {/* Right Column: Measurement Probabilities & Bloch Spheres */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                  {/* Measurement Probabilities */}
+                  <div className="glass-panel" style={{ padding: '16px', background: 'rgba(0,0,0,0.1)' }}>
+                    <h4 style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '12px', fontWeight: '600' }}>
+                      Вероятности Измерения Всей Системы
+                    </h4>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                      {(() => {
+                        const rho = simulationResult.stepsDensityMatrices[simStep];
+                        const D = 1 << numQubits;
+                        const probs = Array.from({ length: D }, (_, idx) => {
+                          const prob = rho[idx]?.[idx]?.re || 0;
+                          const label = `|${idx.toString(2).padStart(numQubits, '0')}⟩`;
+                          return { label, prob };
+                        });
+
+                        return probs.map(({ label, prob }) => (
+                          <div key={label}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '3px' }}>
+                              <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>{label}</span>
+                              <span style={{ fontFamily: 'var(--font-mono)', color: prob > 0.001 ? 'var(--accent-cyan)' : 'var(--text-muted)', fontWeight: '600' }}>
+                                {(prob * 100).toFixed(2)}%
+                              </span>
+                            </div>
+                            <div style={{ height: '6px', background: 'rgba(255,255,255,0.05)', borderRadius: '3px', overflow: 'hidden' }}>
+                              <div style={{
+                                width: `${prob * 100}%`, height: '100%',
+                                background: 'linear-gradient(90deg, var(--accent-cyan), var(--accent-purple))',
+                                borderRadius: '3px', transition: 'width 0.4s ease',
+                              }} />
+                            </div>
+                          </div>
+                        ));
+                      })()}
+                    </div>
+                  </div>
+
+                  {/* Bloch Spheres Grid */}
+                  <div className="glass-panel" style={{ padding: '16px', background: 'rgba(0,0,0,0.1)' }}>
+                    <h4 style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '16px', fontWeight: '600' }}>
+                      Сферы Блоха для каждого кубита
+                    </h4>
+                    <div style={{ 
+                      display: 'grid', 
+                      gridTemplateColumns: numQubits > 1 ? '1fr 1fr' : '1fr', 
+                      gap: '12px' 
+                    }}>
+                      {Array.from({ length: numQubits }).map((_, qubitIdx) => {
+                        const rho = simulationResult.stepsDensityMatrices[simStep];
+                        const rho_q = getReducedDensityMatrix(rho, qubitIdx, numQubits);
+                        const bloch = getBlochVector(rho_q);
+
+                        return (
+                          <div key={qubitIdx} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                            <div style={{ width: '100%', maxWidth: '160px' }}>
+                              <BlochSphere 
+                                vector={bloch} 
+                                title={`Кубит Q_${qubitIdx}`} 
+                              />
+                            </div>
+                            <span style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px', fontFamily: 'var(--font-mono)' }}>
+                              x: {bloch.x.toFixed(2)}, y: {bloch.y.toFixed(2)}, z: {bloch.z.toFixed(2)}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
                 </div>
               </div>
-
-            </div>
-          </div>
+            </>
+          )}
         </div>
       )}
 
