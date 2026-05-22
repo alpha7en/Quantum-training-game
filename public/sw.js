@@ -1,9 +1,10 @@
-const CACHE_NAME = 'quantum-sim-v2';
+const CACHE_NAME = 'quantum-sim-v3';
+const INDEX_URL = new URL('./index.html', self.location.href).toString();
 const ASSETS_TO_CACHE = [
-  './',
-  './index.html',
-  './manifest.json',
-  './icon.svg',
+  new URL('./', self.location.href).toString(),
+  INDEX_URL,
+  new URL('./manifest.json', self.location.href).toString(),
+  new URL('./icon.svg', self.location.href).toString(),
   'https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css',
   'https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js',
   'https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js'
@@ -35,6 +36,23 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
+
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      fetch(event.request)
+        .then((networkResponse) => {
+          if (networkResponse && networkResponse.status === 200) {
+            const responseToCache = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put(INDEX_URL, responseToCache);
+            });
+          }
+          return networkResponse;
+        })
+        .catch(() => caches.match(INDEX_URL))
+    );
+    return;
+  }
 
   const url = new URL(event.request.url);
 
@@ -84,12 +102,7 @@ self.addEventListener('fetch', (event) => {
           }
           return networkResponse;
         })
-        .catch(() => {
-          // If offline and requesting page navigation, return the cached root
-          if (event.request.mode === 'navigate') {
-            return caches.match('/');
-          }
-        });
+        .catch(() => undefined);
     })
   );
 });
