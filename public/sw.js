@@ -1,13 +1,22 @@
-const CACHE_NAME = 'quantum-sim-v2';
+const CACHE_NAME = 'quantum-sim-v3';
+const INDEX_URL = new URL('./index.html', self.location.href).toString();
 const ASSETS_TO_CACHE = [
-  './',
-  './index.html',
-  './manifest.json',
-  './icon.svg',
+  new URL('./', self.location.href).toString(),
+  INDEX_URL,
+  new URL('./manifest.json', self.location.href).toString(),
+  new URL('./icon.svg', self.location.href).toString(),
   'https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css',
   'https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js',
   'https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js'
 ];
+
+const cacheResponse = (request, response) => {
+  return caches.open(CACHE_NAME)
+    .then((cache) => cache.put(request, response))
+    .catch((err) => {
+      console.warn('Cache update failed:', err);
+    });
+};
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
@@ -36,6 +45,23 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
 
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      fetch(event.request)
+        .then((networkResponse) => {
+          if (networkResponse && networkResponse.status === 200) {
+            const responseToCache = networkResponse.clone();
+            const responseForIndex = networkResponse.clone();
+            cacheResponse(event.request, responseToCache);
+            cacheResponse(INDEX_URL, responseForIndex);
+          }
+          return networkResponse;
+        })
+        .catch(() => caches.match(INDEX_URL))
+    );
+    return;
+  }
+
   const url = new URL(event.request.url);
 
   // Skip Vite HMR / dev server specific requests
@@ -57,9 +83,8 @@ self.addEventListener('fetch', (event) => {
         fetch(event.request)
           .then((networkResponse) => {
             if (networkResponse && networkResponse.status === 200) {
-              caches.open(CACHE_NAME).then((cache) => {
-                cache.put(event.request, networkResponse);
-              });
+              const responseToCache = networkResponse.clone();
+              cacheResponse(event.request, responseToCache);
             }
           })
           .catch(() => {
@@ -78,17 +103,13 @@ self.addEventListener('fetch', (event) => {
           const isCDN = url.hostname.includes('cdn.jsdelivr.net');
           if (isSameOrigin || isCDN) {
             const responseToCache = networkResponse.clone();
-            caches.open(CACHE_NAME).then((cache) => {
-              cache.put(event.request, responseToCache);
-            });
+            cacheResponse(event.request, responseToCache);
           }
           return networkResponse;
         })
-        .catch(() => {
-          // If offline and requesting page navigation, return the cached root
-          if (event.request.mode === 'navigate') {
-            return caches.match('/');
-          }
+        .catch((err) => {
+          console.warn('Network request failed:', err);
+          return caches.match(event.request);
         });
     })
   );
